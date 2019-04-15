@@ -30,28 +30,28 @@ $add_on_dir = dirname( __FILE__ );
 if ( $ajax_action == 'test_s3' ) {
     require_once $wp2static_core_dir .
         '/plugin/WP2Static/SitePublisher.php';
-    require_once $add_on_dir . '/S3.php';
+    require_once $add_on_dir . '/S3Deployer.php';
 
     wp_die();
     return null;
 } elseif ( $ajax_action == 's3_prepare_export' ) {
     require_once $wp2static_core_dir .
         '/plugin/WP2Static/SitePublisher.php';
-    require_once $add_on_dir . '/S3.php';
+    require_once $add_on_dir . '/S3Deployer.php';
 
     wp_die();
     return null;
 } elseif ( $ajax_action == 's3_transfer_files' ) {
     require_once $wp2static_core_dir .
         '/plugin/WP2Static/SitePublisher.php';
-    require_once $add_on_dir . '/S3.php';
+    require_once $add_on_dir . '/S3Deployer.php';
 
     wp_die();
     return null;
 } elseif ( $ajax_action == 'cloudfront_invalidate_all_items' ) {
     require_once $wp2static_core_dir .
         '/plugin/WP2Static/SitePublisher.php';
-    require_once $add_on_dir . '/S3.php';
+    require_once $add_on_dir . '/S3Deployer.php';
 
     wp_die();
     return null;

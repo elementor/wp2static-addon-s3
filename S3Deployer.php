@@ -39,8 +39,6 @@ class WP2Static_S3 extends WP2Static_SitePublisher {
             echo 'ERROR';
             die(); }
 
-        $this->initiateProgressIndicator();
-
         $batch_size = $this->settings['deployBatchSize'];
 
         if ( $batch_size > $this->files_remaining ) {
@@ -115,8 +113,6 @@ class WP2Static_S3 extends WP2Static_SitePublisher {
                 $this->hash_key,
                 $this->local_file_contents
             );
-
-            $this->updateProgress();
         }
 
         $this->writeFilePathAndHashesToFile();
@@ -141,7 +137,8 @@ class WP2Static_S3 extends WP2Static_SitePublisher {
             }
         } catch ( Exception $e ) {
             require_once dirname( __FILE__ ) .
-                '/../WP2Static/WsLog.php';
+                '/../static-html-output-plugin' .
+                '/plugin/WP2Static/WsLog.php';
 
             WsLog::l( 'S3 ERROR RETURNED: ' . $e );
             echo "There was an error testing S3.\n";
@@ -159,7 +156,7 @@ class WP2Static_S3 extends WP2Static_SitePublisher {
 
         $this->logAction( "Using S3 Endpoint {$host_name}" );
 
-        $content_acl = 'public-read';
+        //$content_acl = 'public-read';
         $content_title = $s3_path;
         $aws_service_name = 's3';
         $timestamp = gmdate( 'Ymd\THis\Z' );
@@ -170,7 +167,7 @@ class WP2Static_S3 extends WP2Static_SitePublisher {
         $request_headers['Content-Type'] = $content_type;
         $request_headers['Date'] = $timestamp;
         $request_headers['Host'] = $host_name;
-        $request_headers['x-amz-acl'] = $content_acl;
+        //$request_headers['x-amz-acl'] = $content_acl;
         $request_headers['x-amz-content-sha256'] = hash( 'sha256', $content );
 
         // Sort it in ascending order
@@ -322,7 +319,9 @@ EOD;
 
         if ( ! $fp ) {
             require_once dirname( __FILE__ ) .
-                '/../WP2Static/WsLog.php';
+                '/../static-html-output-plugin' .
+                '/plugin/WP2Static/WsLog.php';
+
             WsLog::l( "CLOUDFRONT CONNECTION ERROR: {$errno} {$errstr}" );
             die( "Connection failed: {$errno} {$errstr}\n" );
         }
