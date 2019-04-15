@@ -50,7 +50,8 @@ class WP2Static_S3 extends WP2Static_SitePublisher {
         $this->openPreviousHashesFile();
 
         require_once dirname( __FILE__ ) .
-            '/../WP2Static/MimeTypes.php';
+            '/../static-html-output-plugin' .
+            '/plugin/WP2Static/MimeTypes.php';
 
         foreach ( $lines as $line ) {
             list($local_file, $this->target_path) = explode( ',', $line );
