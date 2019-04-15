@@ -3,7 +3,7 @@
 /**
  * Plugin Name:       WP2Static Add-on: S3
  * Plugin URI:        https://wp2static.com
- * Description:       Microsoft S3 Cloud Storage as a deployment option for WP2Static.
+ * Description:       AWS S3 as a deployment option for WP2Static.
  * Version:           0.1
  * Author:            Leon Stafford
  * Author URI:        https://leonstafford.github.io

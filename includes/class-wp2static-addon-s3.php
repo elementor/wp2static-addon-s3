@@ -31,7 +31,7 @@ class Wp2static_Addon_S3 {
 	}
 
     public function add_deployment_option_to_ui( $deploy_options ) {
-        $deploy_options['s3'] = array('Microsoft S3');
+        $deploy_options['s3'] = array('Amazon S3');
 
         return $deploy_options;
     }
