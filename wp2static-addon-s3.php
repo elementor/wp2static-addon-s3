@@ -51,19 +51,6 @@ if ( $ajax_action === 'test_s3' ) {
 
 define( 'PLUGIN_NAME_VERSION', '0.1' );
 
-function activate_wp2static_addon_s3() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-wp2static-addon-s3-activator.php';
-	Wp2static_Addon_S3_Activator::activate();
-}
-
-function deactivate_wp2static_addon_s3() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-wp2static-addon-s3-deactivator.php';
-	Wp2static_Addon_S3_Deactivator::deactivate();
-}
-
-register_activation_hook( __FILE__, 'activate_wp2static_addon_s3' );
-register_deactivation_hook( __FILE__, 'deactivate_wp2static_addon_s3' );
-
 require plugin_dir_path( __FILE__ ) . 'includes/class-wp2static-addon-s3.php';
 
 function run_wp2static_addon_s3() {

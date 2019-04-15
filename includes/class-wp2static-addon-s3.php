@@ -15,23 +15,14 @@ class Wp2static_Addon_S3 {
 		$this->plugin_name = 'wp2static-addon-s3';
 
 		$this->load_dependencies();
-		$this->set_locale();
 		$this->define_admin_hooks();
 	}
 
 	private function load_dependencies() {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wp2static-addon-s3-loader.php';
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wp2static-addon-s3-i18n.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-wp2static-addon-s3-admin.php';
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-wp2static-addon-s3-public.php';
 
 		$this->loader = new Wp2static_Addon_S3_Loader();
-
-	}
-
-	private function set_locale() {
-		$plugin_i18n = new Wp2static_Addon_S3_i18n();
-		$this->loader->add_action( 'plugins_loaded', $plugin_i18n, 'load_plugin_textdomain' );
 	}
 
 	private function define_admin_hooks() {
