@@ -25,25 +25,33 @@ $wp2static_core_dir =
     dirname( __FILE__ ) . '/../static-html-output-plugin';
 
 $add_on_dir = dirname( __FILE__ );
+
 // NOTE: bypass instantiating plugin for specific AJAX requests
-if ( $ajax_action === 'test_s3' ) {
+if ( $ajax_action == 'test_s3' ) {
     require_once $wp2static_core_dir .
         '/plugin/WP2Static/SitePublisher.php';
-    require_once $add_on_dir . '/S3Deployer.php';
+    require_once $add_on_dir . '/S3.php';
 
     wp_die();
     return null;
-} else if ( $ajax_action === 's3_prepare_export' ) {
+} elseif ( $ajax_action == 's3_prepare_export' ) {
     require_once $wp2static_core_dir .
         '/plugin/WP2Static/SitePublisher.php';
-    require_once $add_on_dir . '/S3Deployer.php';
+    require_once $add_on_dir . '/S3.php';
 
     wp_die();
     return null;
-} else if ( $ajax_action === 's3_upload_files' ) {
+} elseif ( $ajax_action == 's3_transfer_files' ) {
     require_once $wp2static_core_dir .
         '/plugin/WP2Static/SitePublisher.php';
-    require_once $add_on_dir . '/S3Deployer.php';
+    require_once $add_on_dir . '/S3.php';
+
+    wp_die();
+    return null;
+} elseif ( $ajax_action == 'cloudfront_invalidate_all_items' ) {
+    require_once $wp2static_core_dir .
+        '/plugin/WP2Static/SitePublisher.php';
+    require_once $add_on_dir . '/S3.php';
 
     wp_die();
     return null;
