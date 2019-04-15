@@ -2,21 +2,21 @@
 	'use strict';
 
 	$(function() {
-    deploy_options['azure'] = {
+    deploy_options['s3'] = {
       exportSteps: [
-          'azure_prepare_export',
-          'azure_upload_files',
+          's3_prepare_export',
+          's3_upload_files',
           'finalize_deployment'
       ],
       required_fields: {
-        azStorageAccountName: 'Please specify your Storage Account Name in order to deploy to Azure.',
-        azContainerName: 'Please specify your Container Name in order to deploy to Azure.',
+        azStorageAccountName: 'Please specify your Storage Account Name in order to deploy to S3.',
+        azContainerName: 'Please specify your Container Name in order to deploy to S3.',
         azAccessKey: 'Please specify your Access Key for this Storage/Container.'
       }
     };
 
-    status_descriptions['azure_prepare_export'] = 'Preparing to deploy to Microsoft Azure Storage';
-    status_descriptions['azure_upload_files'] = 'Uploading files to Microsoft Azure Storage';
+    status_descriptions['s3_prepare_export'] = 'Preparing to deploy to Microsoft S3 Storage';
+    status_descriptions['s3_upload_files'] = 'Uploading files to Microsoft S3 Storage';
 
   }); // end DOM ready
 

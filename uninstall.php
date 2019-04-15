@@ -22,7 +22,7 @@
  * @link       https://leonstafford.github.io
  * @since      1.0.0
  *
- * @package    Wp2static_Addon_Azure
+ * @package    Wp2static_Addon_S3
  */
 
 // If uninstall not called from WordPress, then exit.

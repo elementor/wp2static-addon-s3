@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Plugin Name:       WP2Static Add-on: Azure
+ * Plugin Name:       WP2Static Add-on: S3
  * Plugin URI:        https://wp2static.com
- * Description:       Microsoft Azure Cloud Storage as a deployment option for WP2Static.
+ * Description:       Microsoft S3 Cloud Storage as a deployment option for WP2Static.
  * Version:           0.1
  * Author:            Leon Stafford
  * Author URI:        https://leonstafford.github.io
@@ -29,21 +29,21 @@ $add_on_dir = dirname( __FILE__ );
 if ( $ajax_action === 'test_azure' ) {
     require_once $wp2static_core_dir .
         '/plugin/WP2Static/SitePublisher.php';
-    require_once $add_on_dir . '/AzureDeployer.php';
+    require_once $add_on_dir . '/S3Deployer.php';
 
     wp_die();
     return null;
 } else if ( $ajax_action === 'azure_prepare_export' ) {
     require_once $wp2static_core_dir .
         '/plugin/WP2Static/SitePublisher.php';
-    require_once $add_on_dir . '/AzureDeployer.php';
+    require_once $add_on_dir . '/S3Deployer.php';
 
     wp_die();
     return null;
 } else if ( $ajax_action === 'azure_upload_files' ) {
     require_once $wp2static_core_dir .
         '/plugin/WP2Static/SitePublisher.php';
-    require_once $add_on_dir . '/AzureDeployer.php';
+    require_once $add_on_dir . '/S3Deployer.php';
 
     wp_die();
     return null;
@@ -53,12 +53,12 @@ define( 'PLUGIN_NAME_VERSION', '0.1' );
 
 function activate_wp2static_addon_azure() {
 	require_once plugin_dir_path( __FILE__ ) . 'includes/class-wp2static-addon-azure-activator.php';
-	Wp2static_Addon_Azure_Activator::activate();
+	Wp2static_Addon_S3_Activator::activate();
 }
 
 function deactivate_wp2static_addon_azure() {
 	require_once plugin_dir_path( __FILE__ ) . 'includes/class-wp2static-addon-azure-deactivator.php';
-	Wp2static_Addon_Azure_Deactivator::deactivate();
+	Wp2static_Addon_S3_Deactivator::deactivate();
 }
 
 register_activation_hook( __FILE__, 'activate_wp2static_addon_azure' );
@@ -68,7 +68,7 @@ require plugin_dir_path( __FILE__ ) . 'includes/class-wp2static-addon-azure.php'
 
 function run_wp2static_addon_azure() {
 
-	$plugin = new Wp2static_Addon_Azure();
+	$plugin = new Wp2static_Addon_S3();
 	$plugin->run();
 
 }
