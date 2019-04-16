@@ -45,10 +45,12 @@ class Wp2static_Addon_S3 {
     public function add_deployment_option_keys( $keys ) {
         $new_keys = array(
           'baseUrl-s3',
-          'azStorageAccountName',
-          'azContainerName',
-          'azAccessKey',
-          'azPath',
+          'cfDistributionId',
+          's3Bucket',
+          's3Key',
+          's3Region',
+          's3RemotePath',
+          's3Secret',
         );
 
         $keys = array_merge(
@@ -62,9 +64,11 @@ class Wp2static_Addon_S3 {
     public function whitelist_deployment_option_keys( $keys ) {
         $whitelist_keys = array(
           'baseUrl-s3',
-          'azStorageAccountName',
-          'azContainerName',
-          'azPath',
+          'cfDistributionId',
+          's3Bucket',
+          's3Key',
+          's3Region',
+          's3RemotePath',
         );
 
         $keys = array_merge(
@@ -78,10 +82,12 @@ class Wp2static_Addon_S3 {
     public function add_post_and_db_keys( $keys ) {
         $keys['s3'] = array(
           'baseUrl-s3',
-          'azStorageAccountName',
-          'azContainerName',
-          'azAccessKey',
-          'azPath',
+          'cfDistributionId',
+          's3Bucket',
+          's3Key',
+          's3Region',
+          's3RemotePath',
+          's3Secret',
         );
 
         return $keys;
