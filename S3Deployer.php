@@ -3,7 +3,22 @@
 class WP2Static_S3 extends WP2Static_SitePublisher {
 
     public function __construct() {
-        $this->loadSettings( 's3' );
+        // calling outside WP chain, need to specify this
+        // Add-on's option keys
+        $deploy_keys = array(
+          's3',
+          array(
+            'baseUrl-s3',
+            'cfDistributionId',
+            's3Bucket',
+            's3Key',
+            's3Region',
+            's3RemotePath',
+            's3Secret',
+          ),
+        );
+
+        $this->loadSettings( 's3', $deploy_keys );
 
         $this->previous_hashes_path =
             $this->settings['wp_uploads_path'] .
@@ -276,7 +291,9 @@ class WP2Static_S3 extends WP2Static_SitePublisher {
         $this->logAction( 'Invalidating all CloudFront items' );
 
         if ( ! isset( $this->settings['cfDistributionId'] ) ) {
-            error_log( 'no CF ID found' );
+            $this->logAction(
+                'No CloudFront distribution ID set, skipping invalidation'
+            );
 
             if ( ! defined( 'WP_CLI' ) ) {
                 echo 'SUCCESS'; }
