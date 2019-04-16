@@ -279,6 +279,7 @@ class WP2Static_S3 extends WP2Static_SitePublisher {
         $this->logAction( "API response code: {$http_code}" );
         $this->logAction( "API response body: {$output}" );
 
+        // TODO: pass $ch to checkForValidResponses
         $this->checkForValidResponses(
             $http_code,
             array( '100', '200' )
@@ -327,13 +328,32 @@ EOD;
         $msg .= "Authorization: AWS {$access_key}:{$sig}\r\n";
         $msg .= "Content-Length: {$len}\r\n\r\n";
         $msg .= $xml;
-        $fp = fsockopen(
-            'ssl://cloudfront.amazonaws.com',
-            443,
+
+        $context = stream_context_create([
+            'ssl' => [
+                'verify_peer' => false,
+                'verify_peer_name' => false
+            ]
+        ]);
+
+        $hostname = 'ssl://cloudfront.amazonaws.com:443';
+        $fp = stream_socket_client(
+            $hostname,
             $errno,
             $errstr,
-            30
+            ini_get("default_socket_timeout"),
+            STREAM_CLIENT_CONNECT,
+            $context
         );
+
+
+        //$fp = fsockopen(
+        //    'ssl://cloudfront.amazonaws.com',
+        //    443,
+        //    $errno,
+        //    $errstr,
+        //    30
+        //);
 
         if ( ! $fp ) {
             require_once dirname( __FILE__ ) .
