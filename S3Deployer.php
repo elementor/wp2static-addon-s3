@@ -94,6 +94,10 @@ class WP2Static_S3 extends WP2Static_SitePublisher {
                 $current = crc32( $this->local_file_contents );
 
                 if ( $prev != $current ) {
+                    $this->logAction(
+                        "{$this->hash_key} differs from previous deploy cache "
+                    );
+
                     try {
                         $this->put_s3_object(
                             $this->target_path .
@@ -112,6 +116,10 @@ class WP2Static_S3 extends WP2Static_SitePublisher {
                     );
                 }
             } else {
+                $this->logAction(
+                    "{$this->hash_key} not found in deploy cache "
+                );
+
                 try {
                     $this->put_s3_object(
                         $this->target_path .
@@ -185,6 +193,11 @@ class WP2Static_S3 extends WP2Static_SitePublisher {
         $request_headers['Host'] = $host_name;
         //$request_headers['x-amz-acl'] = $content_acl;
         $request_headers['x-amz-content-sha256'] = hash( 'sha256', $content );
+
+        if ( ! empty( $this->settings[ 's3CacheControl' ] ) ) {
+            $max_age = $this->settings[ 's3CacheControl' ];
+            $request_headers['Cache-Control'] = 'max-age=' . $max_age;
+        }
 
         // Sort it in ascending order
         ksort( $request_headers );
@@ -266,15 +279,36 @@ class WP2Static_S3 extends WP2Static_SitePublisher {
         curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1 );
         curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, false );
         curl_setopt( $ch, CURLOPT_SSL_VERIFYHOST, 0 );
-        curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, true );
+        // curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, true );
+        curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, 0 );
         curl_setopt( $ch, CURLOPT_CUSTOMREQUEST, 'PUT' );
         curl_setopt( $ch, CURLOPT_USERAGENT, 'WP2Static.com' );
-        curl_setopt( $ch, CURLOPT_CONNECTTIMEOUT, 0 );
-        curl_setopt( $ch, CURLOPT_TIMEOUT, 600 );
+        curl_setopt( $ch, CURLOPT_CONNECTTIMEOUT, 20 );
+        curl_setopt( $ch, CURLOPT_VERBOSE, 1 );
+        curl_setopt( $ch, CURLOPT_TIMEOUT, 30 );
         curl_setopt( $ch, CURLOPT_POSTFIELDS, $content );
 
         $output = curl_exec( $ch );
         $http_code = curl_getinfo( $ch, CURLINFO_HTTP_CODE );
+
+        if ( ! $output ) {
+            $this->logAction( "No response from API request, printing cURL error" );
+            $response = curl_error( $ch );
+            $this->logAction( stripslashes( $response ) );
+
+            throw new Exception(
+                'No response from API request, check Debug Log'
+            );
+        }
+
+        if ( ! $http_code ) {
+            $this->logAction( "No response code from API, printing cURL info" );
+            $this->logAction( print_r( curl_getinfo( $ch ), true ) );
+
+            throw new Exception(
+                'No response code from API, check Debug Log'
+            );
+        }
 
         $this->logAction( "API response code: {$http_code}" );
         $this->logAction( "API response body: {$output}" );
