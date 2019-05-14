@@ -1,6 +1,6 @@
 === Plugin Name ===
 Contributors: leonstafford
-Donate link: https://leonstafford.github.io
+Donate link: https://ljs.dev
 Tags: wp2static,s3,static
 Requires at least: 3.2
 Tested up to: 5.0.3

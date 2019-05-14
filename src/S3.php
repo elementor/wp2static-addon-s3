@@ -10,9 +10,10 @@ class S3 extends SitePublisher {
         $this->batch_size =
             $plugin->options->getOption( 'deployBatchSize' );
         $this->cf_distribution_id =
-            $plugin->option->getOption( 'cfDistribution' );
+            $plugin->option->getOption( 'cfDistributionId' );
         $this->s3_bucket = $plugin->options->getOption( 's3Bucket' );
-        $this->s3_cache_control = $plugin->options->getOption( 's3CacheControl' );
+        $this->s3_cache_control =
+            $plugin->options->getOption( 's3CacheControl' );
         $this->s3_key = $plugin->options->getOption( 's3Key' );
         $this->s3_region = $plugin->options->getOption( 's3Region' );
         $this->s3_remote_path = $plugin->options->getOption( 's3Region' );
@@ -29,36 +30,36 @@ class S3 extends SitePublisher {
             echo 'ERROR';
             die(); }
 
-        $batch_size = $this->batch_size;
-
-        if ( $batch_size > $this->files_remaining ) {
-            $batch_size = $this->files_remaining;
+        if ( $this->batch_size > $this->files_remaining ) {
+            $this->batch_size = $this->files_remaining;
         }
 
-        $lines = $this->getItemsToDeploy( $batch_size );
+        $lines = $this->getItemsToDeploy( $this->batch_size );
 
         $this->openPreviousHashesFile();
 
         foreach ( $lines as $line ) {
-            list($local_file, $this->target_path) = explode( ',', $line );
+            list($this->local_file, $this->target_path) = explode( ',', $line );
 
-            $local_file = $this->archive->path . $local_file;
+            $this->local_file = $this->archive->path . $this->local_file;
 
-            if ( ! is_file( $local_file ) ) {
-                continue; }
+            if ( ! is_file( $this->local_file ) ) {
+                continue;
+            }
 
             if ( isset( $this->s3_remote_path ) ) {
                 $this->target_path =
-                    $this->s3_remote_path . '/' . $this->target_path;
+                    $this->s3_remote_path . '/' .
+                        $this->target_path;
             }
 
             $this->logAction(
-                "Uploading {$local_file} to {$this->target_path} in S3"
+                "Uploading {$this->local_file} to {$this->target_path} in S3"
             );
 
-            $this->local_file_contents = file_get_contents( $local_file );
+            $this->local_file_contents = file_get_contents( $this->local_file );
 
-            $this->hash_key = $this->target_path . basename( $local_file );
+            $this->hash_key = $this->target_path . basename( $this->local_file );
 
             if ( isset( $this->file_paths_and_hashes[ $this->hash_key ] ) ) {
                 $prev = $this->file_paths_and_hashes[ $this->hash_key ];
@@ -72,9 +73,9 @@ class S3 extends SitePublisher {
                     try {
                         $this->put_s3_object(
                             $this->target_path .
-                                    basename( $local_file ),
+                                    basename( $this->local_file ),
                             $this->local_file_contents,
-                            GuessMimeType( $local_file )
+                            GuessMimeType( $this->local_file )
                         );
 
                     } catch ( Exception $e ) {
@@ -94,9 +95,9 @@ class S3 extends SitePublisher {
                 try {
                     $this->put_s3_object(
                         $this->target_path .
-                                basename( $local_file ),
+                                basename( $this->local_file ),
                         $this->local_file_contents,
-                        GuessMimeType( $local_file )
+                        GuessMimeType( $this->local_file )
                     );
 
                 } catch ( Exception $e ) {
@@ -110,6 +111,8 @@ class S3 extends SitePublisher {
             );
         }
 
+        unset( $this->s3 );
+        
         $this->writeFilePathAndHashesToFile();
 
         $this->pauseBetweenAPICalls();
@@ -131,10 +134,6 @@ class S3 extends SitePublisher {
                 echo 'SUCCESS';
             }
         } catch ( Exception $e ) {
-            require_once dirname( __FILE__ ) .
-                '/../static-html-output-plugin' .
-                '/plugin/WP2Static/WsLog.php';
-
             WsLog::l( 'S3 ERROR RETURNED: ' . $e );
             echo "There was an error testing S3.\n";
         }
@@ -361,10 +360,6 @@ EOD;
         //);
 
         if ( ! $fp ) {
-            require_once dirname( __FILE__ ) .
-                '/../static-html-output-plugin' .
-                '/plugin/WP2Static/WsLog.php';
-
             WsLog::l( "CLOUDFRONT CONNECTION ERROR: {$errno} {$errstr}" );
             die( "Connection failed: {$errno} {$errstr}\n" );
         }
@@ -386,4 +381,4 @@ EOD;
     }
 }
 
-$s3 = new WP2Static_S3();
+$s3 = new S3();
