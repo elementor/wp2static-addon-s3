@@ -3,10 +3,10 @@
 /**
  * Plugin Name:       WP2Static Add-on: S3
  * Plugin URI:        https://wp2static.com
- * Description:       AWS S3 as a deployment option for WP2Static.
+ * Description:       S3 as a deployment option for WP2Static.
  * Version:           0.1
  * Author:            Leon Stafford
- * Author URI:        https://leonstafford.github.io
+ * Author URI:        https://ljs.dev
  * License:           Unlicense
  * License URI:       http://unlicense.org
  * Text Domain:       wp2static-addon-s3
@@ -17,41 +17,42 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
+define( 'WP2STATIC_S3_PATH', plugin_dir_path( __FILE__ ) );
+
+require WP2STATIC_S3_PATH . 'vendor/autoload.php';
+
 // @codingStandardsIgnoreStart
 $ajax_action = isset( $_POST['ajax_action'] ) ? $_POST['ajax_action'] : '';
 // @codingStandardsIgnoreEnd
 
-$wp2static_core_dir =
-    dirname( __FILE__ ) . '/../static-html-output-plugin';
-
-$add_on_dir = dirname( __FILE__ );
-
 // NOTE: bypass instantiating plugin for specific AJAX requests
 if ( $ajax_action == 'test_s3' ) {
-    require_once $wp2static_core_dir .
-        '/plugin/WP2Static/SitePublisher.php';
-    require_once $add_on_dir . '/S3Deployer.php';
+    $s3 = new WP2Static\S3;
+
+    $s3->test_s3();
 
     wp_die();
     return null;
 } elseif ( $ajax_action == 's3_prepare_export' ) {
-    require_once $wp2static_core_dir .
-        '/plugin/WP2Static/SitePublisher.php';
-    require_once $add_on_dir . '/S3Deployer.php';
+    $s3 = new WP2Static\S3;
+
+    $s3->bootstrap();
+    $s3->prepareDeploy();
 
     wp_die();
     return null;
 } elseif ( $ajax_action == 's3_transfer_files' ) {
-    require_once $wp2static_core_dir .
-        '/plugin/WP2Static/SitePublisher.php';
-    require_once $add_on_dir . '/S3Deployer.php';
+    $s3 = new WP2Static\S3;
+
+    $s3->bootstrap();
+    $s3->s3_transfer_files();
 
     wp_die();
     return null;
 } elseif ( $ajax_action == 'cloudfront_invalidate_all_items' ) {
-    require_once $wp2static_core_dir .
-        '/plugin/WP2Static/SitePublisher.php';
-    require_once $add_on_dir . '/S3Deployer.php';
+    $s3 = new WP2Static\S3;
+
+    $s3->cloudfront_invalidate_all_items();
 
     wp_die();
     return null;
@@ -59,11 +60,8 @@ if ( $ajax_action == 'test_s3' ) {
 
 define( 'PLUGIN_NAME_VERSION', '0.1' );
 
-require plugin_dir_path( __FILE__ ) . 'includes/class-wp2static-addon-s3.php';
-
 function run_wp2static_addon_s3() {
-
-	$plugin = new Wp2static_Addon_S3();
+	$plugin = new WP2Static\S3Addon();
 	$plugin->run();
 
 }

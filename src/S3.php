@@ -1,50 +1,25 @@
 <?php
 
-class WP2Static_S3 extends WP2Static_SitePublisher {
+namespace WP2Static;
+
+class S3 extends SitePublisher {
 
     public function __construct() {
-        // calling outside WP chain, need to specify this
-        // Add-on's option keys
-        $deploy_keys = array(
-          's3',
-          array(
-            'baseUrl-s3',
-            'cfDistributionId',
-            's3Bucket',
-            's3Key',
-            's3Region',
-            's3RemotePath',
-            's3Secret',
-          ),
-        );
+        $plugin = Controller::getInstance();
 
-        $this->loadSettings( 's3', $deploy_keys );
-
+        $this->batch_size =
+            $plugin->options->getOption( 'deployBatchSize' );
+        $this->cf_distribution_id =
+            $plugin->option->getOption( 'cfDistribution' );
+        $this->s3_bucket = $plugin->options->getOption( 's3Bucket' );
+        $this->s3_cache_control = $plugin->options->getOption( 's3CacheControl' );
+        $this->s3_key = $plugin->options->getOption( 's3Key' );
+        $this->s3_region = $plugin->options->getOption( 's3Region' );
+        $this->s3_remote_path = $plugin->options->getOption( 's3Region' );
+        $this->s3_secret = $plugin->options->getOption( 's3Secret' );
         $this->previous_hashes_path =
-            $this->settings['wp_uploads_path'] .
+            SiteInfo::getPath( 'uploads' ) .
                 '/WP2STATIC-S3-PREVIOUS-HASHES.txt';
-
-        if ( defined( 'WP_CLI' ) ) {
-            return; }
-
-        switch ( $_POST['ajax_action'] ) {
-            case 'test_s3':
-                $this->test_s3();
-                break;
-            case 's3_prepare_export':
-                $this->bootstrap();
-                $this->loadArchive();
-                $this->prepareDeploy();
-                break;
-            case 's3_transfer_files':
-                $this->bootstrap();
-                $this->loadArchive();
-                $this->upload_files();
-                break;
-            case 'cloudfront_invalidate_all_items':
-                $this->cloudfront_invalidate_all_items();
-                break;
-        }
     }
 
     public function upload_files() {
@@ -54,7 +29,7 @@ class WP2Static_S3 extends WP2Static_SitePublisher {
             echo 'ERROR';
             die(); }
 
-        $batch_size = $this->settings['deployBatchSize'];
+        $batch_size = $this->batch_size;
 
         if ( $batch_size > $this->files_remaining ) {
             $batch_size = $this->files_remaining;
@@ -64,10 +39,6 @@ class WP2Static_S3 extends WP2Static_SitePublisher {
 
         $this->openPreviousHashesFile();
 
-        require_once dirname( __FILE__ ) .
-            '/../static-html-output-plugin' .
-            '/plugin/WP2Static/MimeTypes.php';
-
         foreach ( $lines as $line ) {
             list($local_file, $this->target_path) = explode( ',', $line );
 
@@ -76,9 +47,9 @@ class WP2Static_S3 extends WP2Static_SitePublisher {
             if ( ! is_file( $local_file ) ) {
                 continue; }
 
-            if ( isset( $this->settings['s3RemotePath'] ) ) {
+            if ( isset( $this->s3_remote_path ) ) {
                 $this->target_path =
-                    $this->settings['s3RemotePath'] . '/' . $this->target_path;
+                    $this->s3_remote_path . '/' . $this->target_path;
             }
 
             $this->logAction(
@@ -175,8 +146,8 @@ class WP2Static_S3 extends WP2Static_SitePublisher {
 
         $this->logAction( "PUT'ing file to {$s3_path} in S3" );
 
-        $host_name = $this->settings['s3Bucket'] . '.s3.' .
-            $this->settings['s3Region'] . '.amazonaws.com';
+        $host_name = $this->s3_region . '.s3.' .
+            $this->s3_region . '.amazonaws.com';
 
         $this->logAction( "Using S3 Endpoint {$host_name}" );
 
@@ -194,8 +165,8 @@ class WP2Static_S3 extends WP2Static_SitePublisher {
         //$request_headers['x-amz-acl'] = $content_acl;
         $request_headers['x-amz-content-sha256'] = hash( 'sha256', $content );
 
-        if ( ! empty( $this->settings[ 's3CacheControl' ] ) ) {
-            $max_age = $this->settings[ 's3CacheControl' ];
+        if ( ! empty( $this->s3_cache_control ) ) {
+            $max_age = $this-s3_cache_control;
             $request_headers['Cache-Control'] = 'max-age=' . $max_age;
         }
 
@@ -231,7 +202,7 @@ class WP2Static_S3 extends WP2Static_SitePublisher {
 
         $scope = array();
         $scope[] = $date;
-        $scope[] = $this->settings['s3Region'];
+        $scope[] = $this->s3_region;
         $scope[] = $aws_service_name;
         $scope[] = 'aws4_request';
 
@@ -243,17 +214,17 @@ class WP2Static_S3 extends WP2Static_SitePublisher {
         $string_to_sign = implode( "\n", $string_to_sign );
 
         // Signing key
-        $k_secret = 'AWS4' . $this->settings['s3Secret'];
+        $k_secret = 'AWS4' . $this->s3_secret;
         $k_date = hash_hmac( 'sha256', $date, $k_secret, true );
         $k_region =
-            hash_hmac( 'sha256', $this->settings['s3Region'], $k_date, true );
+            hash_hmac( 'sha256', $this->s3_region, $k_date, true );
         $k_service = hash_hmac( 'sha256', $aws_service_name, $k_region, true );
         $k_signing = hash_hmac( 'sha256', 'aws4_request', $k_service, true );
 
         $signature = hash_hmac( 'sha256', $string_to_sign, $k_signing );
 
         $authorization = [
-            'Credential=' . $this->settings['s3Key'] . '/' .
+            'Credential=' . $this->s3_key . '/' .
                 implode( '/', $scope ),
             'SignedHeaders=' . $signed_headers,
             'Signature=' . $signature,
@@ -325,7 +296,7 @@ class WP2Static_S3 extends WP2Static_SitePublisher {
     public function cloudfront_invalidate_all_items() {
         $this->logAction( 'Invalidating all CloudFront items' );
 
-        if ( ! isset( $this->settings['cfDistributionId'] ) ) {
+        if ( ! isset( $this->cf_distribution_id ) ) {
             $this->logAction(
                 'No CloudFront distribution ID set, skipping invalidation'
             );
@@ -336,9 +307,9 @@ class WP2Static_S3 extends WP2Static_SitePublisher {
             return;
         }
 
-        $distribution = $this->settings['cfDistributionId'];
-        $access_key = $this->settings['s3Key'];
-        $secret_key = $this->settings['s3Secret'];
+        $distribution = $this-cf_distribution_id;
+        $access_key = $this->s3_key;
+        $secret_key = $this->s3_secret;
 
         $epoch = date( 'U' );
 

@@ -1,6 +1,8 @@
 <?php
 
-class Wp2static_Addon_S3_Loader {
+namespace WP2Static;
+
+class S3Loader {
 
 	protected $actions;
 	protected $filters;
