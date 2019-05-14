@@ -306,7 +306,7 @@ class S3 extends SitePublisher {
             return;
         }
 
-        $distribution = $this-cf_distribution_id;
+        $distribution = $this->cf_distribution_id;
         $access_key = $this->s3_key;
         $secret_key = $this->s3_secret;
 
