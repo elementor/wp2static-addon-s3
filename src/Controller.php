@@ -29,7 +29,7 @@ class Controller {
 
         // check for seed data
         // if deployment_url option doesn't exist, create:
-        // $options = $this->getOptions();
+        $options = $this->getOptions();
 
         if ( ! isset( $options['s3Bucket'] ) ) {
             $this->seedOptions();
@@ -137,7 +137,7 @@ class Controller {
         $query_string = "INSERT INTO $table_name (name, value, label, description) VALUES (%s, %s, %s, %s);";
         $query = $wpdb->prepare(
             $query_string,
-            'cfDistributionId',
+            'cfDistributionID',
             '',
             'CloudFront Distribution ID',
             'If using CloudFront, set this to auto-invalidate cache');
@@ -189,7 +189,7 @@ class Controller {
 
         $wpdb->query( $query );
 
-    // 'cfDistributionId',
+    // 'cfDistributionID',
     // 's3Bucket',
     // 's3AccessKeyID',
     // 's3Region',
@@ -366,3 +366,4 @@ class Controller {
         return $submenu_pages;
     }
 }
+
