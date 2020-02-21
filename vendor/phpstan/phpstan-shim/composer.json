@@ -1,0 +1,25 @@
+{
+	"name": "phpstan/phpstan-shim",
+	"description": "PHPStan Phar distribution",
+	"license": ["MIT"],
+	"require": {
+		"php": "~7.1"
+	},
+	"replace": {
+		"phpstan/phpstan": "self.version",
+		"phpstan/phpdoc-parser": "^0.3.3",
+		"nikic/php-parser": "^4.0.2"
+	},
+	"bin": [
+		"phpstan",
+		"phpstan.phar"
+	],
+	"extra": {
+		"branch-alias": {
+			"dev-master": "0.11-dev"
+		}
+	},
+	"autoload": {
+		"files": ["bootstrap.php"]
+	}
+}
