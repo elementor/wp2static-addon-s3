@@ -26,7 +26,7 @@ class Deployer {
         }
 
         $client_options = [
-            'profile' => Controller::getValue( 'awsProfile' ),
+            'profile' => Controller::getValue( 's3Profile' ),
             'version' => 'latest',
             'region' => Controller::getValue( 's3Region' ),
         ];
@@ -100,7 +100,9 @@ class Deployer {
                 $result = $s3->putObject([
                     'Bucket' => Controller::getValue( 's3Bucket' ),
                     'Key' => $key,
-                    'Body' => file_get_contents( $filename )
+                    'Body' => file_get_contents( $filename ),
+                    'ACL'    => 'public-read',
+                    'ContentType' => mime_content_type( $filename ),
                 ]);
 
                 if ( $result['@metadata']['statusCode'] === 200 ) {
