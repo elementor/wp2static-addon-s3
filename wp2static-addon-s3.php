@@ -1,16 +1,15 @@
 <?php
 
 /**
- * Plugin Name:       WP2Static Add-on: S3
+ * Plugin Name:       WP2Static Add-on: S3 Deployment
  * Plugin URI:        https://wp2static.com
- * Description:       AWS S3 as a deployment option for WP2Static.
+ * Description:       AWS S3 deployment add-on for WP2Static.
  * Version:           0.1
  * Author:            Leon Stafford
- * Author URI:        https://leonstafford.github.io
+ * Author URI:        https://ljs.dev
  * License:           Unlicense
  * License URI:       http://unlicense.org
  * Text Domain:       wp2static-addon-s3
- * Domain Path:       /languages
  */
 
 if ( ! defined( 'WPINC' ) ) {

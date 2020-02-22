@@ -37,73 +37,35 @@ class Controller {
 
         add_filter( 'wp2static_add_menu_items', [ 'WP2StaticS3\Controller', 'addSubmenuPage' ] );
 
-        // TOOD: used only if adding to core Options view
-        // add_filter(
-        //     'wp2static_render_options_page_vars',
-        //     [ $this, 'addOptionsTemplateVars' ],
-        //     15,
-        //     1);
-
-        // add_action(
-        //     'wp2static_addon_ui_save_options',
-        //     [ $this, 'uiSaveOptions' ],
-        //     15,
-        //     1);
-
         add_action(
-            'admin_post_wp2static_s3_delete',
-            [ $this, 'deleteZip' ],
+            'admin_post_wp2static_s3_save_options',
+            [ $this, 'saveOptionsFromUI' ],
             15,
             1);
 
         add_action(
             'wp2static_deploy',
-            [ $this, 'generateZip' ],
+            [ $this, 'deploy' ],
             15,
             1);
 
-        // add_action(
-        //     'wp2static_post_process_file',
-        //     [ $this, 'convertURLsToOffline' ],
-        //     15,
-        //     2);
-
-        // add_action(
-        //     'wp2static_set_destination_url',
-        //     [ $this, 'setDestinationURL' ]);
-
-
         add_action(
-            'wp2static_set_wordpress_site_url',
-            [ $this, 'modifyWordPressSiteURL' ]);
+            'wp2static_post_deploy_trigger',
+            [ 'WP2StaticS3\Deployer', 'cloudfront_invalidate' ],
+            15,
+            1);
 
-        if ( defined( 'WP_CLI' ) ) {
-            \WP_CLI::add_command(
-                'wp2static s3',
-                [ 'WP2StaticS3\CLI', 's3' ]);
-        }
+        // if ( defined( 'WP_CLI' ) ) {
+        //     \WP_CLI::add_command(
+        //         'wp2static s3',
+        //         [ 'WP2StaticS3\CLI', 's3' ]);
+        // }
 	}
 
     // TODO: is this needed? confirm slashing of destination URLs...
     public function modifyWordPressSiteURL( $site_url ) {
         return rtrim( $site_url, '/' );
     }
-
-    // public function setDestinationURL( $destination_url ) {
-    //     $options = $this->getOptions();
-
-    //     return $options['deployment_url']->value;
-    // }
-
-    // TODO: should be own addon for offline files
-    // public function convertURLsToOffline( $file, $processed_site_path ) {
-    //     WsLog::l('Zip Addon converting URLs to offline in file: ' . $file);
-    //     error_log('within ProcessedSite path: ' . $processed_site_path);
-    //     error_log('Detect type of file by name, extension or content type');
-    //     error_log('modify URL');
-
-    //     // other actions can process after this, based on priority
-    // }
 
     /**
      *  Get all add-on options
@@ -148,7 +110,7 @@ class Controller {
             $query_string,
             's3Bucket',
             '',
-            'S3 Bucket',
+            'Bucket name',
             '');
 
         $wpdb->query( $query );
@@ -157,7 +119,7 @@ class Controller {
             $query_string,
             's3AccessKeyID',
             '',
-            'AWS Access Key ID',
+            'Access Key ID',
             '');
 
         $wpdb->query( $query );
@@ -166,16 +128,62 @@ class Controller {
             $query_string,
             's3SecretAccessKey',
             '',
-            'AWS Secret Access Key',
+            'Secret Access Key',
             '');
 
         $wpdb->query( $query );
 
         $query = $wpdb->prepare(
             $query_string,
+            'cfAccessKeyID',
+            '',
+            'Access Key ID',
+            '');
+
+        $wpdb->query( $query );
+
+        $query = $wpdb->prepare(
+            $query_string,
+            'cfSecretAccessKey',
+            '',
+            'Secret Access Key',
+            '');
+
+        $wpdb->query( $query );
+
+
+        $query = $wpdb->prepare(
+            $query_string,
             's3Region',
             '',
-            'AWS Region',
+            'Region',
+            '');
+
+        $wpdb->query( $query );
+
+        $query = $wpdb->prepare(
+            $query_string,
+            's3Profile',
+            '',
+            'Profile',
+            '');
+
+        $wpdb->query( $query );
+
+        $query = $wpdb->prepare(
+            $query_string,
+            'cfRegion',
+            '',
+            'Region',
+            '');
+
+        $wpdb->query( $query );
+
+        $query = $wpdb->prepare(
+            $query_string,
+            'cfProfile',
+            '',
+            'Profile',
             '');
 
         $wpdb->query( $query );
@@ -184,18 +192,10 @@ class Controller {
             $query_string,
             's3RemotePath',
             '',
-            'Path in S3 Bucket',
+            'Path prefix in bucket',
             'Optionally, deploy to a subdirectory within bucket');
 
         $wpdb->query( $query );
-
-    // 'cfDistributionID',
-    // 's3Bucket',
-    // 's3AccessKeyID',
-    // 's3Region',
-    // 's3RemotePath',
-    // 's3SecretAccessKey',
-
     }
 
     /**
@@ -215,7 +215,7 @@ class Controller {
 
     public static function renderS3Page() : void {
         $view = [];
-        $view['nonce_action'] = 'wp2static-s3-delete';
+        $view['nonce_action'] = 'wp2static-s3-options';
         $view['uploads_path'] = \WP2Static\SiteInfo::getPath('uploads');
         $s3_path = \WP2Static\SiteInfo::getPath( 'uploads' ) . 'wp2static-processed-site.s3';
 
@@ -229,44 +229,12 @@ class Controller {
         require_once __DIR__ . '/../views/s3-page.php';
     }
 
-    // public function addOptionsTemplateVars( $template_vars ) {
-    //     $template_vars['wp2static_s3_addon_options'] = $this->getOptions();
-
-    //     // find position of deploy options
-    //     $deployment_options_position = 0;
-    //     foreach( $template_vars['options_templates'] as $index => $options_template ) {
-    //       if (strpos($options_template, 'core-deployment-options.php') !== false) {
-    //         $deployment_options_position = $index + 1;
-    //       } 
-    //     } 
-
-    //     // insert s3 deploy options template after that
-    //     array_splice(
-    //         $template_vars['options_templates'],
-    //         $deployment_options_position,
-    //         0, // # elements to remove
-    //         [__DIR__ . '/../views/deploy-options.php']
-    //     );
-
-    //     return $template_vars;
-    // }
-
-    // TODO: use in other addons needing to add to core options
-    // public function uiSaveOptions() {
-    //     error_log('S3 Addon Saving Options, accessing $_POST');
-
-    //     if (isset($_POST['s3Bucket'])) {
-    //         // TODO: validate URL
-    //         // call other save function
-    //         $this->saveOption( 's3Bucket', $_POST['s3Bucket'] );
-    //     }
-    // }
 
     public function deploy( $processed_site_path ) {
         \WP2Static\WsLog::l('S3 Addon deploying');
 
-        $s3_deployer = new S3Deployer();
-        $s3_deployer->deploy( $processed_site_path );
+        $s3_deployer = new Deployer();
+        $s3_deployer->upload_files( $processed_site_path );
     }
 
     /*
@@ -364,6 +332,121 @@ class Controller {
         $submenu_pages['s3'] = [ 'WP2StaticS3\Controller', 'renderS3Page' ];
 
         return $submenu_pages;
+    }
+
+    public static function saveOptionsFromUI() {
+        check_admin_referer( 'wp2static-s3-options' );
+
+        global $wpdb;
+
+        $table_name = $wpdb->prefix . 'wp2static_addon_s3_options';
+
+        $wpdb->update(
+            $table_name,
+            [ 'value' => sanitize_text_field( $_POST['cfDistributionID'] ) ],
+            [ 'name' => 'cfDistributionID' ]
+        );
+
+        $wpdb->update(
+            $table_name,
+            [ 'value' => sanitize_text_field( $_POST['s3Bucket'] ) ],
+            [ 'name' => 's3Bucket' ]
+        );
+
+        $wpdb->update(
+            $table_name,
+            [ 'value' => sanitize_text_field( $_POST['s3AccessKeyID'] ) ],
+            [ 'name' => 's3AccessKeyID' ]
+        );
+
+        $secret_access_key =
+            $_POST['s3SecretAccessKey'] ?
+            self::encrypt_decrypt(
+                'encrypt',
+                 sanitize_text_field( $_POST['s3SecretAccessKey'] )
+            ) : '';
+
+        $wpdb->update(
+            $table_name,
+            [ 'value' => $secret_access_key ],
+            [ 'name' => 's3SecretAccessKey' ]
+        );
+
+        $wpdb->update(
+            $table_name,
+            [ 'value' => sanitize_text_field( $_POST['cfAccessKeyID'] ) ],
+            [ 'name' => 'cfAccessKeyID' ]
+        );
+
+        $secret_access_key =
+            $_POST['cfSecretAccessKey'] ?
+            self::encrypt_decrypt(
+                'encrypt',
+                 sanitize_text_field( $_POST['cfSecretAccessKey'] )
+            ) : '';
+
+        $wpdb->update(
+            $table_name,
+            [ 'value' => $secret_access_key ],
+            [ 'name' => 'cfSecretAccessKey' ]
+        );
+
+        $wpdb->update(
+            $table_name,
+            [ 'value' => sanitize_text_field( $_POST['s3Region'] ) ],
+            [ 'name' => 's3Region' ]
+        );
+
+        $wpdb->update(
+            $table_name,
+            [ 'value' => sanitize_text_field( $_POST['cfRegion'] ) ],
+            [ 'name' => 'cfRegion' ]
+        );
+
+        $wpdb->update(
+            $table_name,
+            [ 'value' => sanitize_text_field( $_POST['s3Profile'] ) ],
+            [ 'name' => 's3Profile' ]
+        );
+
+        $wpdb->update(
+            $table_name,
+            [ 'value' => sanitize_text_field( $_POST['cfProfile'] ) ],
+            [ 'name' => 'cfProfile' ]
+        );
+
+        $wpdb->update(
+            $table_name,
+            [ 'value' => sanitize_text_field( $_POST['s3RemotePath'] ) ],
+            [ 'name' => 's3RemotePath' ]
+        );
+
+        wp_safe_redirect( admin_url( 'admin.php?page=wp2static-s3' ) );
+        exit;
+    }
+
+    /**
+     * Get option value
+     *
+     * @return string option value
+     */
+    public static function getValue( string $name ) : string {
+        global $wpdb;
+
+        $table_name = $wpdb->prefix . 'wp2static_addon_s3_options';
+
+        $sql = $wpdb->prepare(
+            "SELECT value FROM $table_name WHERE" . ' name = %s LIMIT 1',
+            $name
+        );
+
+        $option_value = $wpdb->get_var( $sql );
+
+        if ( ! is_string( $option_value ) ) {
+            return '';
+        }
+
+        return $option_value;
     }
 }
 

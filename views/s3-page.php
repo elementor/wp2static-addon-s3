@@ -1,5 +1,7 @@
 <h2>S3 Deployment Options</h2>
 
+<h3>S3</h3>
+
 <form
     name="wp2static-s3-save-options"
     method="POST"
@@ -53,7 +55,6 @@
                 <input
                     id="<?php echo $view['options']['s3AccessKeyID']->name; ?>"
                     name="<?php echo $view['options']['s3AccessKeyID']->name; ?>"
-                    type="password"
                     value="<?php echo $view['options']['s3AccessKeyID']->value !== '' ? $view['options']['s3AccessKeyID']->value : ''; ?>"
                 />
             </td>
@@ -70,10 +71,29 @@
                     id="<?php echo $view['options']['s3SecretAccessKey']->name; ?>"
                     name="<?php echo $view['options']['s3SecretAccessKey']->name; ?>"
                     type="password"
-                    value="<?php echo $view['options']['s3SecretAccessKey']->value !== '' ? $view['options']['s3SecretAccessKey']->value : ''; ?>"
+                    value="<?php echo $view['options']['s3SecretAccessKey']->value !== '' ?
+                        \WP2StaticS3\Controller::encrypt_decrypt('decrypt', $view['options']['s3SecretAccessKey']->value) :
+                        ''; ?>"
                 />
             </td>
         </tr>
+
+        <tr>
+            <td style="width:50%;">
+                <label
+                    for="<?php echo $view['options']['s3Profile']->name; ?>"
+                ><?php echo $view['options']['s3Profile']->label; ?></label>
+            </td>
+            <td>
+                <input
+                    id="<?php echo $view['options']['s3Profile']->name; ?>"
+                    name="<?php echo $view['options']['s3Profile']->name; ?>"
+                    type="text"
+                    value="<?php echo $view['options']['s3Profile']->value !== '' ? $view['options']['s3Profile']->value : ''; ?>"
+                />
+            </td>
+        </tr>
+
 
         <tr>
             <td style="width:50%;">
@@ -87,6 +107,80 @@
                     name="<?php echo $view['options']['s3RemotePath']->name; ?>"
                     type="text"
                     value="<?php echo $view['options']['s3RemotePath']->value !== '' ? $view['options']['s3RemotePath']->value : ''; ?>"
+                />
+            </td>
+        </tr>
+
+    </tbody>
+</table>
+
+
+<h3>CloudFront</h3>
+
+<table class="widefat striped">
+    <tbody>
+
+        <tr>
+            <td style="width:50%;">
+                <label
+                    for="<?php echo $view['options']['cfRegion']->name; ?>"
+                ><?php echo $view['options']['cfRegion']->label; ?></label>
+            </td>
+            <td>
+                <input
+                    id="<?php echo $view['options']['cfRegion']->name; ?>"
+                    name="<?php echo $view['options']['cfRegion']->name; ?>"
+                    type="text"
+                    value="<?php echo $view['options']['cfRegion']->value !== '' ? $view['options']['cfRegion']->value : ''; ?>"
+                />
+            </td>
+        </tr>
+
+        <tr>
+            <td style="width:50%;">
+                <label
+                    for="<?php echo $view['options']['cfAccessKeyID']->name; ?>"
+                ><?php echo $view['options']['cfAccessKeyID']->label; ?></label>
+            </td>
+            <td>
+                <input
+                    id="<?php echo $view['options']['cfAccessKeyID']->name; ?>"
+                    name="<?php echo $view['options']['cfAccessKeyID']->name; ?>"
+                    value="<?php echo $view['options']['cfAccessKeyID']->value !== '' ? $view['options']['cfAccessKeyID']->value : ''; ?>"
+                />
+            </td>
+        </tr>
+
+        <tr>
+            <td style="width:50%;">
+                <label
+                    for="<?php echo $view['options']['cfSecretAccessKey']->name; ?>"
+                ><?php echo $view['options']['cfSecretAccessKey']->label; ?></label>
+            </td>
+            <td>
+                <input
+                    id="<?php echo $view['options']['cfSecretAccessKey']->name; ?>"
+                    name="<?php echo $view['options']['cfSecretAccessKey']->name; ?>"
+                    type="password"
+                    value="<?php echo $view['options']['cfSecretAccessKey']->value !== '' ?
+                        \WP2StaticS3\Controller::encrypt_decrypt('decrypt', $view['options']['cfSecretAccessKey']->value) :
+                        ''; ?>"
+                />
+            </td>
+        </tr>
+
+        <tr>
+            <td style="width:50%;">
+                <label
+                    for="<?php echo $view['options']['cfProfile']->name; ?>"
+                ><?php echo $view['options']['cfProfile']->label; ?></label>
+            </td>
+            <td>
+                <input
+                    id="<?php echo $view['options']['cfProfile']->name; ?>"
+                    name="<?php echo $view['options']['cfProfile']->name; ?>"
+                    type="text"
+                    value="<?php echo $view['options']['cfProfile']->value !== '' ? $view['options']['cfProfile']->value : ''; ?>"
                 />
             </td>
         </tr>
@@ -112,7 +206,6 @@
 </table>
 
 <br>
-
 
     <button class="button btn-primary">Save S3 Options</button>
 </form>
