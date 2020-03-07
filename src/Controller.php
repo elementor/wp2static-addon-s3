@@ -3,10 +3,6 @@
 namespace WP2StaticS3;
 
 class Controller {
-    const WP2STATIC_S3_VERSION = '0.1';
-
-	public function __construct() {}
-
 	public function run() {
         // initialize options DB
         global $wpdb;
