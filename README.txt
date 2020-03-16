@@ -1,10 +1,9 @@
 === Plugin Name ===
 Contributors: leonstafford
-Donate link: https://leonstafford.github.io
 Tags: wp2static,s3,static
 Requires at least: 3.2
 Tested up to: 5.4
-Stable tag: 1.0-alpha-1
+Stable tag: 1.0-alpha-002
 License: Unlicense
 License URI: http://unlicense.org
 
