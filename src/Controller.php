@@ -3,8 +3,7 @@
 namespace WP2StaticS3;
 
 class Controller {
-    public function run() {
-        // initialize options DB
+    public function run() : void {
         global $wpdb;
 
         $table_name = $wpdb->prefix . 'wp2static_addon_s3_options';
@@ -23,8 +22,6 @@ class Controller {
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';
         dbDelta( $sql );
 
-        // check for seed data
-        // if deployment_url option doesn't exist, create:
         $options = $this->getOptions();
 
         if ( ! isset( $options['s3Bucket'] ) ) {
@@ -49,21 +46,17 @@ class Controller {
 
         add_action(
             'wp2static_post_deploy_trigger',
-            [ 'WP2StaticS3\Deployer', 'cloudfront_invalidate' ],
+            [ 'WP2StaticS3\Deployer', 'cloudfront_invalidate_all_items' ],
             15,
             1
         );
 
-        // if ( defined( 'WP_CLI' ) ) {
-        // \WP_CLI::add_command(
-        // 'wp2static s3',
-        // [ 'WP2StaticS3\CLI', 's3' ]);
-        // }
-    }
-
-    // TODO: is this needed? confirm slashing of destination URLs...
-    public function modifyWordPressSiteURL( $site_url ) {
-        return rtrim( $site_url, '/' );
+        if ( defined( 'WP_CLI' ) ) {
+            \WP_CLI::add_command(
+                'wp2static s3',
+                [ 'WP2StaticS3\CLI', 's3' ]
+            );
+        }
     }
 
     /**
@@ -210,8 +203,10 @@ class Controller {
 
     /**
      * Save options
+     *
+     * @param mixed $value option value to save
      */
-    public static function saveOption( $name, $value ) : void {
+    public static function saveOption( string $name, $value ) : void {
         global $wpdb;
 
         $table_name = $wpdb->prefix . 'wp2static_addon_s3_options';
@@ -238,7 +233,7 @@ class Controller {
     }
 
 
-    public function deploy( $processed_site_path ) {
+    public function deploy( string $processed_site_path ) : void {
         \WP2Static\WsLog::l( 'S3 Addon deploying' );
 
         $s3_deployer = new Deployer();
@@ -249,7 +244,7 @@ class Controller {
      * Naive encypting/decrypting
      *
      */
-    public static function encrypt_decrypt( $action, $string ) {
+    public static function encrypt_decrypt( string $action, string $string ) : string {
         $output = false;
         $encrypt_method = 'AES-256-CBC';
 
@@ -268,13 +263,13 @@ class Controller {
 
         if ( $action == 'encrypt' ) {
             $output = openssl_encrypt( $string, $encrypt_method, $key, 0, $variate );
-            $output = base64_encode( $output );
+            $output = base64_encode( (string) $output );
         } elseif ( $action == 'decrypt' ) {
             $output =
                 openssl_decrypt( base64_decode( $string ), $encrypt_method, $key, 0, $variate );
         }
 
-        return $output;
+        return (string) $output;
     }
 
     public static function activate_for_single_site() : void {
@@ -337,13 +332,19 @@ class Controller {
         }
     }
 
-    public static function addSubmenuPage( $submenu_pages ) {
+    /**
+     * Add WP2Static submenu
+     *
+     * @param mixed[] $submenu_pages array of submenu pages
+     * @return mixed[] array of submenu pages
+     */
+    public static function addSubmenuPage( array $submenu_pages ) : array {
         $submenu_pages['s3'] = [ 'WP2StaticS3\Controller', 'renderS3Page' ];
 
         return $submenu_pages;
     }
 
-    public static function saveOptionsFromUI() {
+    public static function saveOptionsFromUI() : void {
         check_admin_referer( 'wp2static-s3-options' );
 
         global $wpdb;

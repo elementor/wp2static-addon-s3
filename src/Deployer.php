@@ -7,6 +7,7 @@ use RecursiveDirectoryIterator;
 use Aws\S3\S3Client;
 use Aws\CloudFront\CloudFrontClient;
 use Aws\Exception\AwsException;
+use Aws\Credentials\Credentials;
 
 // TODO: pull out of old core GuessMimeType( $local_file )
 
@@ -19,7 +20,7 @@ class Deployer {
 
     public function __construct() {}
 
-    public function upload_files( $processed_site_path ) : void {
+    public function upload_files( string $processed_site_path ) : void {
         // check if dir exists
         if ( ! is_dir( $processed_site_path ) ) {
             return;
@@ -81,7 +82,7 @@ class Deployer {
 
                 if ( ! $real_filepath ) {
                     $err = 'Trying to add unknown file to Zip: ' . $filename;
-                    WsLog::l( $err );
+                    \WP2Static\WsLog::l( $err );
                     continue;
                 }
 
@@ -99,6 +100,11 @@ class Deployer {
                     ltrim( str_replace( $processed_site_path, '', $filename ), '/' );
 
                 $finfo = finfo_open( FILEINFO_MIME_TYPE );
+
+                if ( ! $finfo ) {
+                    continue;
+                }
+
                 $mime_type = finfo_file( $finfo, $filename );
 
                 $result = $s3->putObject(
@@ -119,12 +125,12 @@ class Deployer {
     }
 
 
-    public function cloudfront_invalidate_all_items() {
+    public function cloudfront_invalidate_all_items() : void {
         if ( ! Controller::getValue( 'cfDistributionID' ) ) {
             return;
         }
 
-        \WsLog::l( 'Invalidating all CloudFront items' );
+        \WP2Static\WsLog::l( 'Invalidating all CloudFront items' );
 
         $client_options = [
             'profile' => 'default',
@@ -145,7 +151,7 @@ class Deployer {
             Controller::getValue( 's3SecretAccessKey' )
         ) {
 
-            $credentials = new Aws\Credentials\Credentials(
+            $credentials = new \Aws\Credentials\Credentials(
                 Controller::getValue( 's3AccessKeyID' ),
                 \WP2StaticS3\Controller::encrypt_decrypt(
                     'decrypt',
@@ -156,7 +162,7 @@ class Deployer {
             $client_options['credentials'] = $credentials;
         }
 
-        $client = new Aws\CloudFront\CloudFrontClient( $client );
+        $client = new \Aws\CloudFront\CloudFrontClient( $client_options );
 
         try {
             $result = $client->createInvalidation(
