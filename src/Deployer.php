@@ -19,7 +19,7 @@ class Deployer {
 
     public function __construct() {}
 
-    public function upload_files ( $processed_site_path ) : void {
+    public function upload_files( $processed_site_path ) : void {
         // check if dir exists
         if ( ! is_dir( $processed_site_path ) ) {
             return;
@@ -32,7 +32,8 @@ class Deployer {
         ];
 
         /*
-            If no credentials option, SDK attempts to load credentials from your environment in the following order:
+            If no credentials option, SDK attempts to load credentials from
+            your environment in the following order:
 
                  - environment variables.
                  - a credentials .ini file.
@@ -42,22 +43,21 @@ class Deployer {
             Controller::getValue( 's3AccessKeyID' ) &&
             Controller::getValue( 's3SecretAccessKey' )
         ) {
-            error_log('using supplied creds');
+            error_log( 'using supplied creds' );
             $client_options['credentials'] = [
                 'key' => Controller::getValue( 's3AccessKeyID' ),
                 'secret' => \WP2StaticS3\Controller::encrypt_decrypt(
                     'decrypt',
                     Controller::getValue( 's3SecretAccessKey' )
-                )
+                ),
             ];
             unset( $client_options['profile'] );
         }
 
-        error_log(print_r($client_options, true));
+        error_log( print_r( $client_options, true ) );
 
         // instantiate S3 client
         $s3 = new \Aws\S3\S3Client( $client_options );
-
 
         // iterate each file in ProcessedSite
         $iterator = new RecursiveIteratorIterator(
@@ -94,16 +94,22 @@ class Deployer {
 
                 $key =
                     Controller::getValue( 's3RemotePath' ) ?
-                    Controller::getValue( 's3RemotePath' ) . '/' . ltrim( str_replace( $processed_site_path, '', $filename ), '/' ) :
-                    ltrim( str_replace( $processed_site_path, '', $filename ),  '/' );
+                    Controller::getValue( 's3RemotePath' ) . '/' .
+                    ltrim( str_replace( $processed_site_path, '', $filename ), '/' ) :
+                    ltrim( str_replace( $processed_site_path, '', $filename ), '/' );
 
-                $result = $s3->putObject([
-                    'Bucket' => Controller::getValue( 's3Bucket' ),
-                    'Key' => $key,
-                    'Body' => file_get_contents( $filename ),
-                    'ACL'    => 'public-read',
-                    'ContentType' => mime_content_type( $filename ),
-                ]);
+                $finfo = finfo_open( FILEINFO_MIME_TYPE );
+                $mime_type = finfo_file( $finfo, $filename );
+
+                $result = $s3->putObject(
+                    [
+                        'Bucket' => Controller::getValue( 's3Bucket' ),
+                        'Key' => $key,
+                        'Body' => file_get_contents( $filename ),
+                        'ACL'    => 'public-read',
+                        'ContentType' => $mime_type,
+                    ]
+                );
 
                 if ( $result['@metadata']['statusCode'] === 200 ) {
                     \WP2Static\DeployCache::addFile( $filename );
@@ -127,7 +133,8 @@ class Deployer {
         ];
 
         /*
-            If no credentials option, SDK attempts to load credentials from your environment in the following order:
+            If no credentials option, SDK attempts to load credentials from
+            your environment in the following order:
 
                  - environment variables.
                  - a credentials .ini file.
@@ -152,22 +159,24 @@ class Deployer {
         $client = new Aws\CloudFront\CloudFrontClient( $client );
 
         try {
-            $result = $client->createInvalidation([
-                'DistributionId' => Controller::getValue( 'cfDistributionID' ),
-                'InvalidationBatch' => [
-                    'CallerReference' => 'WP2Static S3 Add-on',
-                    'Paths' => [
-                        'Items' => ['/*'],
-                        'Quantity' => 1,
+            $result = $client->createInvalidation(
+                [
+                    'DistributionId' => Controller::getValue( 'cfDistributionID' ),
+                    'InvalidationBatch' => [
+                        'CallerReference' => 'WP2Static S3 Add-on',
+                        'Paths' => [
+                            'Items' => [ '/*' ],
+                            'Quantity' => 1,
+                        ],
                     ],
                 ]
-            ]);
+            );
 
-            error_log(print_r($result, true));
+            error_log( print_r( $result, true ) );
 
-        } catch (AwsException $e) {
+        } catch ( AwsException $e ) {
             // output error message if fails
-            error_log($e->getMessage());
+            error_log( $e->getMessage() );
         }
     }
 }

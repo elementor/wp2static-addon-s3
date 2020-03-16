@@ -28,13 +28,15 @@
         "aws/aws-sdk-php": "^3.133"
     },
     "require-dev": {
-        "phpstan/phpstan-shim": "^0.11.5",
-        "giacocorsiglia/wordpress-stubs": "^5.1",
-        "squizlabs/php_codesniffer": "3.*",
-        "phpunit/phpunit": "^8",
+        "phpstan/phpstan": "*",
+        "thecodingmachine/phpstan-strict-rules": "*",
+        "szepeviktor/phpstan-wordpress": "*",
+        "squizlabs/php_codesniffer": "*",
+        "phpunit/phpunit": "*",
         "dealerdirect/phpcodesniffer-composer-installer": "*",
         "wp-coding-standards/wpcs": "*",
-        "jakub-onderka/php-parallel-lint": "*"
+        "jakub-onderka/php-parallel-lint": "*",
+        "10up/wp_mock": "^0.4.2"
     },
     "autoload": {
         "psr-4": {
@@ -57,10 +59,17 @@
         "classmap-authoritative": true
     },
     "scripts": {
-        "phpstan": "php -d memory_limit=-1 ./vendor/bin/phpstan analyse",
-        "phpcs": "vendor/bin/phpcs --standard=./tools/phpcs.xml --ignore=,*/tests/*,*/vendor/*,wp2static.php ./",
+        "phpstan": "vendor/bin/phpstan analyse",
+        "phpcs": "vendor/bin/phpcs --standard=./tools/phpcs.xml --ignore=*/tests/*,*/admin/*,**/coverage/*,*.js,*/vendor/*,*/views/*.php ./",
+        "phpcbf": "vendor/bin/phpcbf --standard=./tools/phpcs.xml --ignore=*/js/*,*/tests/*,*/admin/*,*/coverage/*,*.js,*/vendor/*,*/views/*.php ./",
         "phpunit": "vendor/bin/phpunit ./tests/unit/",
+        "coverage": "vendor/bin/phpunit tests/unit --coverage-html coverage --whitelist src/",
         "lint": "vendor/bin/parallel-lint --exclude vendor .",
+        "test": [
+            "@lint",
+            "@phpcs",
+            "@phpstan"
+        ],
         "build": "/bin/sh tools/build_release.sh"
     }
 }

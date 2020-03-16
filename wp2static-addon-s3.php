@@ -13,7 +13,7 @@
  */
 
 if ( ! defined( 'WPINC' ) ) {
-	die;
+    die;
 }
 
 define( 'WP2STATIC_S3_PATH', plugin_dir_path( __FILE__ ) );
@@ -22,8 +22,8 @@ define( 'WP2STATIC_S3_VERSION', '1.0-alpha-1' );
 require WP2STATIC_S3_PATH . 'vendor/autoload.php';
 
 function run_wp2static_addon_s3() {
-	$controller = new WP2StaticS3\Controller();
-	$controller->run();
+    $controller = new WP2StaticS3\Controller();
+    $controller->run();
 }
 
 register_activation_hook(

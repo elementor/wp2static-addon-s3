@@ -1,0 +1,17 @@
+includes:
+    - vendor/phpstan/phpstan/conf/bleedingEdge.neon
+    - vendor/thecodingmachine/phpstan-strict-rules/phpstan-strict-rules.neon
+    - vendor/szepeviktor/phpstan-wordpress/extension.neon
+parameters:
+    level: max
+    inferPrivatePropertyTypeFromConstructor: true
+    paths:
+        - %currentWorkingDirectory%/src/
+    autoload_files:
+        - %currentWorkingDirectory%/tests/phpstan/bootstrap.php
+        - %currentWorkingDirectory%/tests/phpstan/wp-cli-stubs-2.2.0.php
+    ignoreErrors:
+        - '#[a-zA-Z0-9\\_]+superglobal[a-zA-Z0-9\\_]+#'
+        - '#Call to static method l\(\) on an unknown class WP2Static\\WsLog.#'
+        - '#Call to static method getUrl\(\) on an unknown class WP2Static\\SiteInfo.#'
+        - '#Call to static method getPath\(\) on an unknown class WP2Static\\SiteInfo.#'
