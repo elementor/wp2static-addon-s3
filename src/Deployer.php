@@ -9,8 +9,6 @@ use Aws\CloudFront\CloudFrontClient;
 use Aws\Exception\AwsException;
 use Aws\Credentials\Credentials;
 
-// TODO: pull out of old core GuessMimeType( $local_file )
-
 class Deployer {
 
     // prepare deploy, if modifies URL structure, should be an action
@@ -99,13 +97,7 @@ class Deployer {
                     ltrim( str_replace( $processed_site_path, '', $filename ), '/' ) :
                     ltrim( str_replace( $processed_site_path, '', $filename ), '/' );
 
-                $finfo = finfo_open( FILEINFO_MIME_TYPE );
-
-                if ( ! $finfo ) {
-                    continue;
-                }
-
-                $mime_type = finfo_file( $finfo, $filename );
+                $mime_type = MimeTypes::GuessMimeType( $filename );
 
                 $result = $s3->putObject(
                     [
