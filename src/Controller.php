@@ -241,7 +241,7 @@ class Controller {
     }
 
     /*
-     * Naive encypting/decrypting
+     * Naive encrypting/decrypting
      *
      */
     public static function encrypt_decrypt( string $action, string $string ) : string {
@@ -260,15 +260,15 @@ class Controller {
 
         $key = hash( 'sha256', $secret_key );
         $variate = substr( hash( 'sha256', $secret_iv ), 0, 32 );
-        $hex_key = hex2bin( $key );
-        $hex_iv = hex2bin( $variate );
+        $bin_key = (string) hex2bin( $key );
+        $bin_iv = (string) hex2bin( $variate );
 
         if ( $action == 'encrypt' ) {
-            $output = openssl_encrypt( $string, $encrypt_method, $hex_key, 0, $hex_iv );
+            $output = openssl_encrypt( $string, $encrypt_method, $bin_key, 0, $bin_iv );
             $output = base64_encode( (string) $output );
         } elseif ( $action == 'decrypt' ) {
             $output =
-                openssl_decrypt( base64_decode( $string ), $encrypt_method, $hex_key, 0, $hex_iv );
+                openssl_decrypt( base64_decode( $string ), $encrypt_method, $bin_key, 0, $bin_iv );
         }
 
         return (string) $output;
