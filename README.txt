@@ -3,7 +3,7 @@ Contributors: leonstafford
 Tags: wp2static,s3,static
 Requires at least: 3.2
 Tested up to: 5.4
-Stable tag: 1.0-alpha-003
+Stable tag: 1.0-alpha-004
 License: Unlicense
 License URI: http://unlicense.org
 

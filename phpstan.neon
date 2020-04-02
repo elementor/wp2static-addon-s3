@@ -17,3 +17,4 @@ parameters:
         - '#Call to static method getPath\(\) on an unknown class WP2Static\\SiteInfo.#'
         - '#Call to static method fileisCached\(\) on an unknown class WP2Static\\DeployCache.#'
         - '#Call to static method addFile\(\) on an unknown class WP2Static\\DeployCache.#'
+        - '#Call to static method encrypt_decrypt\(\) on an unknown class WP2Static\\Controller.#'
