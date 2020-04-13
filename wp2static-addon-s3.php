@@ -19,7 +19,9 @@ if ( ! defined( 'WPINC' ) ) {
 define( 'WP2STATIC_S3_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WP2STATIC_S3_VERSION', '1.0-alpha-002' );
 
-require WP2STATIC_S3_PATH . 'vendor/autoload.php';
+if ( file_exists( WP2STATIC_S3_PATH . 'vendor/autoload.php' ) ) {
+    require_once WP2STATIC_S3_PATH . 'vendor/autoload.php';
+}
 
 function run_wp2static_addon_s3() {
     $controller = new WP2StaticS3\Controller();
