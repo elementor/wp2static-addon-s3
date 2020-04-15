@@ -18,10 +18,6 @@
         "source": "https://github.com/WP2Static/wp2static-addon-s3"
     },
     "repositories": [
-        {
-            "type": "pear",
-            "url": "https://pear.php.net"
-        }
     ],
     "require": {
         "php": ">=7.2",
