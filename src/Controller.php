@@ -4,34 +4,7 @@ namespace WP2StaticS3;
 
 class Controller {
     public function run() : void {
-        $options = $this->getOptions();
-
-        if ( ! isset( $options['s3Bucket'] ) ) {
-            $this->seedOptions();
-        }
-
         add_filter( 'wp2static_add_menu_items', [ 'WP2StaticS3\Controller', 'addSubmenuPage' ] );
-
-        add_action(
-            'admin_post_wp2static_s3_save_options',
-            [ $this, 'saveOptionsFromUI' ],
-            15,
-            1
-        );
-
-        add_action(
-            'wp2static_deploy',
-            [ $this, 'deploy' ],
-            15,
-            1
-        );
-
-        add_action(
-            'wp2static_post_deploy_trigger',
-            [ 'WP2StaticS3\Deployer', 'cloudfront_invalidate_all_items' ],
-            15,
-            1
-        );
 
         if ( defined( 'WP_CLI' ) ) {
             \WP_CLI::add_command(
@@ -241,6 +214,32 @@ class Controller {
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';
         dbDelta( $sql );
 
+        $options = self::getOptions();
+
+        if ( ! isset( $options['s3Bucket'] ) ) {
+            self::seedOptions();
+        }
+
+        add_action(
+            'admin_post_wp2static_s3_save_options',
+            [ 'WP2StaticS3\Controller', 'saveOptionsFromUI' ],
+            15,
+            1
+        );
+
+        add_action(
+            'wp2static_deploy',
+            [ 'WP2StaticS3\Controller', 'deploy' ],
+            15,
+            1
+        );
+
+        add_action(
+            'wp2static_post_deploy_trigger',
+            [ 'WP2StaticS3\Deployer', 'cloudfront_invalidate_all_items' ],
+            15,
+            1
+        );
     }
 
     public static function deactivate_for_single_site() : void {
