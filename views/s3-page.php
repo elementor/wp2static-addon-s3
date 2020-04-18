@@ -72,7 +72,7 @@
                     name="<?php echo $view['options']['s3SecretAccessKey']->name; ?>"
                     type="password"
                     value="<?php echo $view['options']['s3SecretAccessKey']->value !== '' ?
-                        \WP2Static\Controller::encrypt_decrypt('decrypt', $view['options']['s3SecretAccessKey']->value) :
+                        \WP2Static\CoreOptions::encrypt_decrypt('decrypt', $view['options']['s3SecretAccessKey']->value) :
                         ''; ?>"
                 />
             </td>
@@ -163,7 +163,7 @@
                     name="<?php echo $view['options']['cfSecretAccessKey']->name; ?>"
                     type="password"
                     value="<?php echo $view['options']['cfSecretAccessKey']->value !== '' ?
-                        \WP2Static\Controller::encrypt_decrypt('decrypt', $view['options']['cfSecretAccessKey']->value) :
+                        \WP2Static\CoreOptions::encrypt_decrypt('decrypt', $view['options']['cfSecretAccessKey']->value) :
                         ''; ?>"
                 />
             </td>

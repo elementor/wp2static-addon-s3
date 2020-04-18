@@ -45,7 +45,7 @@ class Deployer {
             error_log( 'using supplied creds' );
             $client_options['credentials'] = [
                 'key' => Controller::getValue( 's3AccessKeyID' ),
-                'secret' => \WP2Static\Controller::encrypt_decrypt(
+                'secret' => \WP2Static\CoreOptions::encrypt_decrypt(
                     'decrypt',
                     Controller::getValue( 's3SecretAccessKey' )
                 ),
@@ -145,7 +145,7 @@ class Deployer {
 
             $credentials = new \Aws\Credentials\Credentials(
                 Controller::getValue( 's3AccessKeyID' ),
-                \WP2Static\Controller::encrypt_decrypt(
+                \WP2Static\CoreOptions::encrypt_decrypt(
                     'decrypt',
                     Controller::getValue( 's3SecretAccessKey' )
                 )
