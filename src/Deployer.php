@@ -73,13 +73,14 @@ class Deployer {
 
                 // TODO: do filepaths differ when running from WP-CLI (non-chroot)?
 
-                // TODO: check if in DeployCache
-                if ( \WP2Static\DeployCache::fileisCached( $filename ) ) {
+                $cache_key = str_replace( $processed_site_path, '', $filename );
+
+                if ( \WP2Static\DeployCache::fileisCached( $cache_key ) ) {
                     continue;
                 }
 
                 if ( ! $real_filepath ) {
-                    $err = 'Trying to add unknown file to Zip: ' . $filename;
+                    $err = 'Trying to deploy unknown file to S3: ' . $filename;
                     \WP2Static\WsLog::l( $err );
                     continue;
                 }
@@ -91,18 +92,18 @@ class Deployer {
                     continue;
                 }
 
-                $key =
+                $s3_key =
                     Controller::getValue( 's3RemotePath' ) ?
                     Controller::getValue( 's3RemotePath' ) . '/' .
-                    ltrim( str_replace( $processed_site_path, '', $filename ), '/' ) :
-                    ltrim( str_replace( $processed_site_path, '', $filename ), '/' );
+                    ltrim( $cache_key, '/' ) :
+                    ltrim( $cache_key, '/' );
 
                 $mime_type = MimeTypes::GuessMimeType( $filename );
 
                 $result = $s3->putObject(
                     [
                         'Bucket' => Controller::getValue( 's3Bucket' ),
-                        'Key' => $key,
+                        'Key' => $s3_key,
                         'Body' => file_get_contents( $filename ),
                         'ACL'    => 'public-read',
                         'ContentType' => $mime_type,
@@ -110,7 +111,7 @@ class Deployer {
                 );
 
                 if ( $result['@metadata']['statusCode'] === 200 ) {
-                    \WP2Static\DeployCache::addFile( $filename );
+                    \WP2Static\DeployCache::addFile( $cache_key );
                 }
             }
         }
