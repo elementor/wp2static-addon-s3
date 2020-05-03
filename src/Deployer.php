@@ -42,7 +42,6 @@ class Deployer {
             Controller::getValue( 's3AccessKeyID' ) &&
             Controller::getValue( 's3SecretAccessKey' )
         ) {
-            error_log( 'using supplied creds' );
             $client_options['credentials'] = [
                 'key' => Controller::getValue( 's3AccessKeyID' ),
                 'secret' => \WP2Static\CoreOptions::encrypt_decrypt(
@@ -52,8 +51,6 @@ class Deployer {
             ];
             unset( $client_options['profile'] );
         }
-
-        error_log( print_r( $client_options, true ) );
 
         // instantiate S3 client
         $s3 = new \Aws\S3\S3Client( $client_options );
@@ -125,12 +122,6 @@ class Deployer {
 
         \WP2Static\WsLog::l( 'Invalidating all CloudFront items' );
 
-        $client_options = [
-            'profile' => 'default',
-            'version' => 'latest',
-            'region' => Controller::getValue( 'cfRegion' ),
-        ];
-
         /*
             If no credentials option, SDK attempts to load credentials from
             your environment in the following order:
@@ -151,18 +142,23 @@ class Deployer {
                     Controller::getValue( 's3SecretAccessKey' )
                 )
             );
-
-            $client_options['credentials'] = $credentials;
         }
 
-        $client = new \Aws\CloudFront\CloudFrontClient( $client_options );
+        $client = \Aws\CloudFront\CloudFrontClient::factory(
+            [
+                'profile' => Controller::getValue( 'cfProfile' ),
+                'region' => Controller::getValue( 'cfRegion' ),
+                'version' => 'latest',
+                'credentials' => isset( $credentials ) ? $credentials : '',
+            ]
+        );
 
         try {
             $result = $client->createInvalidation(
                 [
                     'DistributionId' => Controller::getValue( 'cfDistributionID' ),
                     'InvalidationBatch' => [
-                        'CallerReference' => 'WP2Static S3 Add-on',
+                        'CallerReference' => 'WP2Static S3 Add-on ' . time(),
                         'Paths' => [
                             'Items' => [ '/*' ],
                             'Quantity' => 1,
@@ -170,8 +166,6 @@ class Deployer {
                     ],
                 ]
             );
-
-            error_log( print_r( $result, true ) );
 
         } catch ( AwsException $e ) {
             // output error message if fails
