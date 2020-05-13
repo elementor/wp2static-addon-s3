@@ -111,6 +111,22 @@
             </td>
         </tr>
 
+        <tr>
+            <td style="width:50%;">
+                <label
+                    for="<?php echo $view['options']['s3CacheControl']->name; ?>"
+                ><?php echo $view['options']['s3CacheControl']->label; ?></label>
+            </td>
+            <td>
+                <input
+                    id="<?php echo $view['options']['s3CacheControl']->name; ?>"
+                    name="<?php echo $view['options']['s3CacheControl']->name; ?>"
+                    type="text"
+                    value="<?php echo $view['options']['s3CacheControl']->value !== '' ? $view['options']['s3CacheControl']->value : ''; ?>"
+                />
+            </td>
+        </tr>
+
     </tbody>
 </table>
 
