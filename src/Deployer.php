@@ -131,15 +131,15 @@ class Deployer {
                  - an IAM role.
         */
         if (
-            Controller::getValue( 's3AccessKeyID' ) &&
-            Controller::getValue( 's3SecretAccessKey' )
+            Controller::getValue( 'cfAccessKeyID' ) &&
+            Controller::getValue( 'cfSecretAccessKey' )
         ) {
 
             $credentials = new \Aws\Credentials\Credentials(
-                Controller::getValue( 's3AccessKeyID' ),
+                Controller::getValue( 'cfAccessKeyID' ),
                 \WP2Static\CoreOptions::encrypt_decrypt(
                     'decrypt',
-                    Controller::getValue( 's3SecretAccessKey' )
+                    Controller::getValue( 'cfSecretAccessKey' )
                 )
             );
         }
