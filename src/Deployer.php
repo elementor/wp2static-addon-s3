@@ -35,6 +35,16 @@ class Deployer {
             )
         );
 
+        $put_data = [
+            'Bucket' => Controller::getValue( 's3Bucket' ),
+            'ACL'    => 'public-read',
+        ];
+
+        $cache_control = Controller::getValue( 's3CacheControl' );
+        if ( $cache_control ) {
+            $put_data['CacheControl'] = $cache_control;
+        }
+
         foreach ( $iterator as $filename => $file_object ) {
             $base_name = basename( $filename );
             if ( $base_name != '.' && $base_name != '..' ) {
@@ -69,15 +79,11 @@ class Deployer {
 
                 $mime_type = MimeTypes::GuessMimeType( $filename );
 
-                $result = $s3->putObject(
-                    [
-                        'Bucket' => Controller::getValue( 's3Bucket' ),
-                        'Key' => $s3_key,
-                        'Body' => file_get_contents( $filename ),
-                        'ACL'    => 'public-read',
-                        'ContentType' => $mime_type,
-                    ]
-                );
+                $put_data['Key'] = $s3_key;
+                $put_data['Body'] = file_get_contents( $filename );
+                $put_data['ContentType'] = $mime_type;
+
+                $result = $s3->putObject( $put_data );
 
                 if ( $result['@metadata']['statusCode'] === 200 ) {
                     \WP2Static\DeployCache::addFile( $cache_key );
