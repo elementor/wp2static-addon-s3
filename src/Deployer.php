@@ -24,36 +24,8 @@ class Deployer {
             return;
         }
 
-        $client_options = [
-            'profile' => Controller::getValue( 's3Profile' ),
-            'version' => 'latest',
-            'region' => Controller::getValue( 's3Region' ),
-        ];
-
-        /*
-            If no credentials option, SDK attempts to load credentials from
-            your environment in the following order:
-
-                 - environment variables.
-                 - a credentials .ini file.
-                 - an IAM role.
-        */
-        if (
-            Controller::getValue( 's3AccessKeyID' ) &&
-            Controller::getValue( 's3SecretAccessKey' )
-        ) {
-            $client_options['credentials'] = [
-                'key' => Controller::getValue( 's3AccessKeyID' ),
-                'secret' => \WP2Static\CoreOptions::encrypt_decrypt(
-                    'decrypt',
-                    Controller::getValue( 's3SecretAccessKey' )
-                ),
-            ];
-            unset( $client_options['profile'] );
-        }
-
         // instantiate S3 client
-        $s3 = new \Aws\S3\S3Client( $client_options );
+        $s3 = self::s3_client();
 
         // iterate each file in ProcessedSite
         $iterator = new RecursiveIteratorIterator(
@@ -112,6 +84,38 @@ class Deployer {
                 }
             }
         }
+    }
+
+    public function s3_client() : \Aws\S3\S3Client {
+        $client_options = [
+            'version' => 'latest',
+            'region' => Controller::getValue( 's3Region' ),
+        ];
+
+        /*
+           If no credentials option, SDK attempts to load credentials from
+           your environment in the following order:
+
+           - environment variables.
+           - a credentials .ini file.
+           - an IAM role.
+         */
+        if (
+            Controller::getValue( 's3AccessKeyID' ) &&
+            Controller::getValue( 's3SecretAccessKey' )
+        ) {
+            $client_options['credentials'] = [
+                'key' => Controller::getValue( 's3AccessKeyID' ),
+                'secret' => \WP2Static\CoreOptions::encrypt_decrypt(
+                    'decrypt',
+                    Controller::getValue( 's3SecretAccessKey' )
+                ),
+            ];
+        } else if ( Controller::getValue( 's3Profile' ) ) {
+            $client_options['profile'] = Controller::getValue( 's3Profile' );
+        }
+
+        return new \Aws\S3\S3Client( $client_options );
     }
 
     public function cloudfront_client() : \Aws\CloudFront\CloudFrontClient {
