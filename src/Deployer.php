@@ -114,18 +114,10 @@ class Deployer {
         }
     }
 
-
-    public function cloudfront_invalidate_all_items() : void {
-        if ( ! Controller::getValue( 'cfDistributionID' ) ) {
-            return;
-        }
-
-        \WP2Static\WsLog::l( 'Invalidating all CloudFront items' );
-
+    public function cloudfront_client() : \Aws\CloudFront\CloudFrontClient {
         /*
             If no credentials option, SDK attempts to load credentials from
             your environment in the following order:
-
                  - environment variables.
                  - a credentials .ini file.
                  - an IAM role.
@@ -134,7 +126,7 @@ class Deployer {
             Controller::getValue( 'cfAccessKeyID' ) &&
             Controller::getValue( 'cfSecretAccessKey' )
         ) {
-
+            // Use the supplied access keys.
             $credentials = new \Aws\Credentials\Credentials(
                 Controller::getValue( 'cfAccessKeyID' ),
                 \WP2Static\CoreOptions::encrypt_decrypt(
@@ -142,16 +134,43 @@ class Deployer {
                     Controller::getValue( 'cfSecretAccessKey' )
                 )
             );
+            $client = \Aws\CloudFront\CloudFrontClient::factory(
+                [
+                    'region' => Controller::getValue( 'cfRegion' ),
+                    'version' => 'latest',
+                    'credentials' => $credentials,
+                ]
+            );
+        } else if ( Controller::getValue( 'cfProfile' ) ) {
+            // Use the specified profile.
+            $client = \Aws\CloudFront\CloudFrontClient::factory(
+                [
+                    'profile' => Controller::getValue( 'cfProfile' ),
+                    'region' => Controller::getValue( 'cfRegion' ),
+                    'version' => 'latest',
+                ]
+            );
+        } else {
+            // Use the IAM role.
+            $client = \Aws\CloudFront\CloudFrontClient::factory(
+                [
+                    'region' => Controller::getValue( 'cfRegion' ),
+                    'version' => 'latest',
+                ]
+            );
         }
 
-        $client = \Aws\CloudFront\CloudFrontClient::factory(
-            [
-                'profile' => Controller::getValue( 'cfProfile' ),
-                'region' => Controller::getValue( 'cfRegion' ),
-                'version' => 'latest',
-                'credentials' => isset( $credentials ) ? $credentials : '',
-            ]
-        );
+        return $client;
+    }
+
+    public function cloudfront_invalidate_all_items() : void {
+        if ( ! Controller::getValue( 'cfDistributionID' ) ) {
+            return;
+        }
+
+        \WP2Static\WsLog::l( 'Invalidating all CloudFront items' );
+
+        $client = self::cloudfront_client();
 
         try {
             $result = $client->createInvalidation(
