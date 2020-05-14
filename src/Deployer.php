@@ -174,7 +174,7 @@ class Deployer {
     }
 
     public static function create_invalidation( string $distribution_id, array $items,
-                                         int $quantity ) : string {
+                                                int $quantity ) : string {
         $client = self::cloudfront_client();
 
         return $client->createInvalidation(
