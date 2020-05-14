@@ -22,7 +22,7 @@ class Controller {
 
         add_action(
             'wp2static_post_deploy_trigger',
-            [ 'WP2StaticS3\Deployer', 'cloudfront_invalidate_all_items' ],
+            [ $this, 'post_deploy_trigger' ],
             15,
             1
         );
@@ -224,6 +224,12 @@ class Controller {
 
         $s3_deployer = new Deployer();
         $s3_deployer->upload_files( $processed_site_path );
+    }
+
+    public static function post_deploy_trigger() : void {
+        if ( Controller::getValue( 'cfInvalidateAllFiles' ) ) {
+            \WP2StaticS3\Deployer::cloudfront_invalidate_all_items();
+        }
     }
 
     public static function activate_for_single_site() : void {
