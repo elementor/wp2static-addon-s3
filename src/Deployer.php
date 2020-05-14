@@ -92,7 +92,7 @@ class Deployer {
         }
     }
 
-    public function s3_client() : \Aws\S3\S3Client {
+    public static function s3_client() : \Aws\S3\S3Client {
         $client_options = [
             'version' => 'latest',
             'region' => Controller::getValue( 's3Region' ),
@@ -124,7 +124,7 @@ class Deployer {
         return new \Aws\S3\S3Client( $client_options );
     }
 
-    public function cloudfront_client() : \Aws\CloudFront\CloudFrontClient {
+    public static function cloudfront_client() : \Aws\CloudFront\CloudFrontClient {
         /*
             If no credentials option, SDK attempts to load credentials from
             your environment in the following order:
@@ -191,7 +191,7 @@ class Deployer {
         );
     }
 
-    public function cloudfront_invalidate_all_items() : void {
+    public static function cloudfront_invalidate_all_items() : void {
         if ( ! Controller::getValue( 'cfDistributionID' ) ) {
             return;
         }
