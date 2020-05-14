@@ -173,6 +173,24 @@ class Deployer {
         return $client;
     }
 
+    public static function create_invalidation( string $distribution_id, array $items,
+                                         int $quantity ) : string {
+        $client = self::cloudfront_client();
+
+        return $client->createInvalidation(
+            [
+                'DistributionId' => $distribution_id,
+                'InvalidationBatch' => [
+                    'CallerReference' => 'WP2Static S3 Add-on ' . time(),
+                    'Paths' => [
+                        'Items' => $items,
+                        'Quantity' => $quantity,
+                    ],
+                ],
+            ]
+        );
+    }
+
     public function cloudfront_invalidate_all_items() : void {
         if ( ! Controller::getValue( 'cfDistributionID' ) ) {
             return;
@@ -180,22 +198,9 @@ class Deployer {
 
         \WP2Static\WsLog::l( 'Invalidating all CloudFront items' );
 
-        $client = self::cloudfront_client();
-
         try {
-            $result = $client->createInvalidation(
-                [
-                    'DistributionId' => Controller::getValue( 'cfDistributionID' ),
-                    'InvalidationBatch' => [
-                        'CallerReference' => 'WP2Static S3 Add-on ' . time(),
-                        'Paths' => [
-                            'Items' => [ '/*' ],
-                            'Quantity' => 1,
-                        ],
-                    ],
-                ]
-            );
-
+            self::create_invalidation( Controller::getValue( 'cfDistributionID' ),
+                                       [ '/*' ], 1);
         } catch ( AwsException $e ) {
             // output error message if fails
             error_log( $e->getMessage() );
