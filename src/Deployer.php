@@ -24,36 +24,8 @@ class Deployer {
             return;
         }
 
-        $client_options = [
-            'profile' => Controller::getValue( 's3Profile' ),
-            'version' => 'latest',
-            'region' => Controller::getValue( 's3Region' ),
-        ];
-
-        /*
-            If no credentials option, SDK attempts to load credentials from
-            your environment in the following order:
-
-                 - environment variables.
-                 - a credentials .ini file.
-                 - an IAM role.
-        */
-        if (
-            Controller::getValue( 's3AccessKeyID' ) &&
-            Controller::getValue( 's3SecretAccessKey' )
-        ) {
-            $client_options['credentials'] = [
-                'key' => Controller::getValue( 's3AccessKeyID' ),
-                'secret' => \WP2Static\CoreOptions::encrypt_decrypt(
-                    'decrypt',
-                    Controller::getValue( 's3SecretAccessKey' )
-                ),
-            ];
-            unset( $client_options['profile'] );
-        }
-
         // instantiate S3 client
-        $s3 = new \Aws\S3\S3Client( $client_options );
+        $s3 = self::s3_client();
 
         // iterate each file in ProcessedSite
         $iterator = new RecursiveIteratorIterator(
@@ -114,6 +86,86 @@ class Deployer {
         }
     }
 
+    public function s3_client() : \Aws\S3\S3Client {
+        $client_options = [
+            'version' => 'latest',
+            'region' => Controller::getValue( 's3Region' ),
+        ];
+
+        /*
+           If no credentials option, SDK attempts to load credentials from
+           your environment in the following order:
+
+           - environment variables.
+           - a credentials .ini file.
+           - an IAM role.
+         */
+        if (
+            Controller::getValue( 's3AccessKeyID' ) &&
+            Controller::getValue( 's3SecretAccessKey' )
+        ) {
+            $client_options['credentials'] = [
+                'key' => Controller::getValue( 's3AccessKeyID' ),
+                'secret' => \WP2Static\CoreOptions::encrypt_decrypt(
+                    'decrypt',
+                    Controller::getValue( 's3SecretAccessKey' )
+                ),
+            ];
+        } else if ( Controller::getValue( 's3Profile' ) ) {
+            $client_options['profile'] = Controller::getValue( 's3Profile' );
+        }
+
+        return new \Aws\S3\S3Client( $client_options );
+    }
+
+    public function cloudfront_client() : \Aws\CloudFront\CloudFrontClient {
+        /*
+            If no credentials option, SDK attempts to load credentials from
+            your environment in the following order:
+                 - environment variables.
+                 - a credentials .ini file.
+                 - an IAM role.
+        */
+        if (
+            Controller::getValue( 'cfAccessKeyID' ) &&
+            Controller::getValue( 'cfSecretAccessKey' )
+        ) {
+            // Use the supplied access keys.
+            $credentials = new \Aws\Credentials\Credentials(
+                Controller::getValue( 'cfAccessKeyID' ),
+                \WP2Static\CoreOptions::encrypt_decrypt(
+                    'decrypt',
+                    Controller::getValue( 'cfSecretAccessKey' )
+                )
+            );
+            $client = \Aws\CloudFront\CloudFrontClient::factory(
+                [
+                    'region' => Controller::getValue( 'cfRegion' ),
+                    'version' => 'latest',
+                    'credentials' => $credentials,
+                ]
+            );
+        } else if ( Controller::getValue( 'cfProfile' ) ) {
+            // Use the specified profile.
+            $client = \Aws\CloudFront\CloudFrontClient::factory(
+                [
+                    'profile' => Controller::getValue( 'cfProfile' ),
+                    'region' => Controller::getValue( 'cfRegion' ),
+                    'version' => 'latest',
+                ]
+            );
+        } else {
+            // Use the IAM role.
+            $client = \Aws\CloudFront\CloudFrontClient::factory(
+                [
+                    'region' => Controller::getValue( 'cfRegion' ),
+                    'version' => 'latest',
+                ]
+            );
+        }
+
+        return $client;
+    }
 
     public function cloudfront_invalidate_all_items() : void {
         if ( ! Controller::getValue( 'cfDistributionID' ) ) {
@@ -122,36 +174,7 @@ class Deployer {
 
         \WP2Static\WsLog::l( 'Invalidating all CloudFront items' );
 
-        /*
-            If no credentials option, SDK attempts to load credentials from
-            your environment in the following order:
-
-                 - environment variables.
-                 - a credentials .ini file.
-                 - an IAM role.
-        */
-        if (
-            Controller::getValue( 's3AccessKeyID' ) &&
-            Controller::getValue( 's3SecretAccessKey' )
-        ) {
-
-            $credentials = new \Aws\Credentials\Credentials(
-                Controller::getValue( 's3AccessKeyID' ),
-                \WP2Static\CoreOptions::encrypt_decrypt(
-                    'decrypt',
-                    Controller::getValue( 's3SecretAccessKey' )
-                )
-            );
-        }
-
-        $client = \Aws\CloudFront\CloudFrontClient::factory(
-            [
-                'profile' => Controller::getValue( 'cfProfile' ),
-                'region' => Controller::getValue( 'cfRegion' ),
-                'version' => 'latest',
-                'credentials' => isset( $credentials ) ? $credentials : '',
-            ]
-        );
+        $client = self::cloudfront_client();
 
         try {
             $result = $client->createInvalidation(
