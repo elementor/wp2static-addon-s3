@@ -45,6 +45,10 @@ class Deployer {
             $put_data['CacheControl'] = $cache_control;
         }
 
+        $cf_max_paths = Controller::getValue( 'cfMaxPathsToInvalidate' );
+        $cf_max_paths = $cf_max_paths ? intval( $cf_max_paths ) : 0;
+        $cf_stale_paths = [];
+
         foreach ( $iterator as $filename => $file_object ) {
             $base_name = basename( $filename );
             if ( $base_name != '.' && $base_name != '..' ) {
@@ -87,12 +91,32 @@ class Deployer {
 
                 if ( $result['@metadata']['statusCode'] === 200 ) {
                     \WP2Static\DeployCache::addFile( $cache_key );
+
+                    if ( $cf_max_paths >= count( $cf_stale_paths ) ) {
+                        $cf_key = $cache_key;
+                        if ( 0 === substr_compare( $cf_key, '/index.html', -11) ) {
+                            $cf_key = substr( $cf_key, 0, -10 );
+                        }
+                        array_push( $cf_stale_paths, $cf_key );
+                    }
                 }
+            }
+        }
+
+        $distribution_id = Controller::getValue( 'cfDistributionID' );
+        $num_stale = count ( $cf_stale_paths );
+        if ( $distribution_id && $num_stale > 0 ) {
+            if ( $num_stale > $cf_max_paths ) {
+                self::cloudfront_invalidate_all_items();
+            } else {
+                $path_text = ( $num_stale === 1 ) ? 'path' : 'paths';
+                \WP2Static\WsLog::l( "Invalidating $num_stale CloudFront $path_text" );
+                self::create_invalidation( $distribution_id, $cf_stale_paths );
             }
         }
     }
 
-    public function s3_client() : \Aws\S3\S3Client {
+    public static function s3_client() : \Aws\S3\S3Client {
         $client_options = [
             'version' => 'latest',
             'region' => Controller::getValue( 's3Region' ),
@@ -124,7 +148,7 @@ class Deployer {
         return new \Aws\S3\S3Client( $client_options );
     }
 
-    public function cloudfront_client() : \Aws\CloudFront\CloudFrontClient {
+    public static function cloudfront_client() : \Aws\CloudFront\CloudFrontClient {
         /*
             If no credentials option, SDK attempts to load credentials from
             your environment in the following order:
@@ -173,29 +197,34 @@ class Deployer {
         return $client;
     }
 
-    public function cloudfront_invalidate_all_items() : void {
+    public static function create_invalidation( string $distribution_id, array $items )
+    : string {
+        $client = self::cloudfront_client();
+
+        return $client->createInvalidation(
+            [
+                'DistributionId' => $distribution_id,
+                'InvalidationBatch' => [
+                    'CallerReference' => 'WP2Static S3 Add-on ' . time(),
+                    'Paths' => [
+                        'Items' => $items,
+                        'Quantity' => count( $items ),
+                    ],
+                ],
+            ]
+        );
+    }
+
+    public static function cloudfront_invalidate_all_items() : void {
         if ( ! Controller::getValue( 'cfDistributionID' ) ) {
             return;
         }
 
-        \WP2Static\WsLog::l( 'Invalidating all CloudFront items' );
-
-        $client = self::cloudfront_client();
+        \WP2Static\WsLog::l( 'Invalidating all CloudFront paths' );
 
         try {
-            $result = $client->createInvalidation(
-                [
-                    'DistributionId' => Controller::getValue( 'cfDistributionID' ),
-                    'InvalidationBatch' => [
-                        'CallerReference' => 'WP2Static S3 Add-on ' . time(),
-                        'Paths' => [
-                            'Items' => [ '/*' ],
-                            'Quantity' => 1,
-                        ],
-                    ],
-                ]
-            );
-
+            self::create_invalidation( Controller::getValue( 'cfDistributionID' ),
+                                       [ '/*' ]);
         } catch ( AwsException $e ) {
             // output error message if fails
             error_log( $e->getMessage() );

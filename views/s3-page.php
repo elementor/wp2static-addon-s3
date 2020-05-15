@@ -217,6 +217,21 @@
             </td>
         </tr>
 
+        <tr>
+            <td style="width:50%;">
+                <label
+                    for="<?php echo $view['options']['cfMaxPathsToInvalidate']->name; ?>"
+                ><?php echo $view['options']['cfMaxPathsToInvalidate']->label; ?></label>
+            </td>
+            <td>
+                <input
+                    id="<?php echo $view['options']['cfMaxPathsToInvalidate']->name; ?>"
+                    name="<?php echo $view['options']['cfMaxPathsToInvalidate']->name; ?>"
+                    type="text"
+                    value="<?php echo $view['options']['cfMaxPathsToInvalidate']->value !== '' ? $view['options']['cfMaxPathsToInvalidate']->value : ''; ?>"
+                />
+            </td>
+        </tr>
 
     </tbody>
 </table>

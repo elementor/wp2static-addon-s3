@@ -20,13 +20,6 @@ class Controller {
             1
         );
 
-        add_action(
-            'wp2static_post_deploy_trigger',
-            [ 'WP2StaticS3\Deployer', 'cloudfront_invalidate_all_items' ],
-            15,
-            1
-        );
-
         if ( defined( 'WP_CLI' ) ) {
             \WP_CLI::add_command(
                 'wp2static s3',
@@ -181,6 +174,16 @@ class Controller {
             's3CacheControl',
             'public, max-age=900',
             'Cache-Control header value',
+            ''
+        );
+
+        $wpdb->query( $query );
+
+        $query = $wpdb->prepare(
+            $query_string,
+            'cfMaxPathsToInvalidate',
+            '',
+            'Maximum number of paths to invalidate before triggering a full invalidation',
             ''
         );
 
@@ -408,6 +411,12 @@ class Controller {
             $table_name,
             [ 'value' => sanitize_text_field( $_POST['s3CacheControl'] ) ],
             [ 'name' => 's3CacheControl' ]
+        );
+
+        $wpdb->update(
+            $table_name,
+            [ 'value' => sanitize_text_field( $_POST['cfMaxPathsToInvalidate'] ) ],
+            [ 'name' => 'cfMaxPathsToInvalidate' ]
         );
 
         wp_safe_redirect( admin_url( 'admin.php?page=wp2static-s3' ) );
