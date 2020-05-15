@@ -178,6 +178,16 @@ class Controller {
         );
 
         $wpdb->query( $query );
+
+        $query = $wpdb->prepare(
+            $query_string,
+            'cfMaxPathsToInvalidate',
+            '',
+            'Maximum number of paths to invalidate before triggering a full invalidation',
+            ''
+        );
+
+        $wpdb->query( $query );
     }
 
     /**
@@ -401,6 +411,12 @@ class Controller {
             $table_name,
             [ 'value' => sanitize_text_field( $_POST['s3CacheControl'] ) ],
             [ 'name' => 's3CacheControl' ]
+        );
+
+        $wpdb->update(
+            $table_name,
+            [ 'value' => sanitize_text_field( $_POST['cfMaxPathsToInvalidate'] ) ],
+            [ 'name' => 'cfMaxPathsToInvalidate' ]
         );
 
         wp_safe_redirect( admin_url( 'admin.php?page=wp2static-s3' ) );
