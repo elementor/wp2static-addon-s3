@@ -175,6 +175,16 @@ class Controller {
         );
 
         $wpdb->query( $query );
+
+        $query = $wpdb->prepare(
+            $query_string,
+            's3CacheControl',
+            'public, max-age=900',
+            'Cache-Control header value',
+            ''
+        );
+
+        $wpdb->query( $query );
     }
 
     /**
@@ -392,6 +402,12 @@ class Controller {
             $table_name,
             [ 'value' => sanitize_text_field( $_POST['s3RemotePath'] ) ],
             [ 'name' => 's3RemotePath' ]
+        );
+
+        $wpdb->update(
+            $table_name,
+            [ 'value' => sanitize_text_field( $_POST['s3CacheControl'] ) ],
+            [ 'name' => 's3CacheControl' ]
         );
 
         wp_safe_redirect( admin_url( 'admin.php?page=wp2static-s3' ) );
