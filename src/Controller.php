@@ -4,6 +4,30 @@ namespace WP2StaticS3;
 
 class Controller {
     public function run() : void {
+        global $wpdb;
+
+        $table_name = $wpdb->prefix . 'wp2static_addon_s3_options';
+
+        $charset_collate = $wpdb->get_charset_collate();
+
+        $sql = "CREATE TABLE $table_name (
+            id mediumint(9) NOT NULL AUTO_INCREMENT,
+            name VARCHAR(255) NOT NULL,
+            value VARCHAR(255) NOT NULL,
+            label VARCHAR(255) NULL,
+            description VARCHAR(255) NULL,
+            PRIMARY KEY  (id)
+        ) $charset_collate;";
+
+        require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+        dbDelta( $sql );
+
+        $options = $this->getOptions();
+
+        if ( ! isset( $options['s3Bucket'] ) ) {
+            $this->seedOptions();
+        }
+
         add_filter( 'wp2static_add_menu_items', [ 'WP2StaticS3\Controller', 'addSubmenuPage' ] );
 
         add_action(
@@ -216,36 +240,48 @@ class Controller {
         $s3_deployer->upload_files( $processed_site_path );
     }
 
-    public static function activate_for_single_site() : void {
-        global $wpdb;
+    /*
+     * Naive encypting/decrypting
+     *
+     */
+    public static function encrypt_decrypt( string $action, string $string ) : string {
+        $output = false;
+        $encrypt_method = 'AES-256-CBC';
 
-        $table_name = $wpdb->prefix . 'wp2static_addon_s3_options';
+        $secret_key =
+            defined( 'AUTH_KEY' ) ?
+            constant( 'AUTH_KEY' ) :
+            'LC>_cVZv34+W.P&_8d|ejfr]d31h)J?z5n(LB6iY=;P@?5/qzJSyB3qctr,.D$[L';
 
-        $charset_collate = $wpdb->get_charset_collate();
+        $secret_iv =
+            defined( 'AUTH_SALT' ) ?
+            constant( 'AUTH_SALT' ) :
+            'ec64SSHB{8|AA_ThIIlm:PD(Z!qga!/Dwll 4|i.?UkC§NNO}z?{Qr/q.KpH55K9';
 
-        $sql = "CREATE TABLE $table_name (
-            id mediumint(9) NOT NULL AUTO_INCREMENT,
-            name VARCHAR(255) NOT NULL,
-            value VARCHAR(255) NOT NULL,
-            label VARCHAR(255) NULL,
-            description VARCHAR(255) NULL,
-            PRIMARY KEY  (id)
-        ) $charset_collate;";
+        $key = hash( 'sha256', $secret_key );
+        $variate = substr( hash( 'sha256', $secret_iv ), 0, 16 );
 
-        require_once ABSPATH . 'wp-admin/includes/upgrade.php';
-        dbDelta( $sql );
-
-        $options = self::getOptions();
-
-        if ( ! isset( $options['s3Bucket'] ) ) {
-            self::seedOptions();
+        if ( $action == 'encrypt' ) {
+            $output = openssl_encrypt( $string, $encrypt_method, $key, 0, $variate );
+            $output = base64_encode( (string) $output );
+        } elseif ( $action == 'decrypt' ) {
+            $output =
+                openssl_decrypt( base64_decode( $string ), $encrypt_method, $key, 0, $variate );
         }
+
+        return (string) $output;
+    }
+
+    public static function activate_for_single_site() : void {
+        error_log( 'activating WP2Static S3 Add-on' );
     }
 
     public static function deactivate_for_single_site() : void {
+        error_log( 'deactivating WP2Static S3 Add-on, maintaining options' );
     }
 
     public static function deactivate( bool $network_wide = null ) : void {
+        error_log( 'deactivating WP2Static S3 Add-on' );
         if ( $network_wide ) {
             global $wpdb;
 
@@ -271,6 +307,7 @@ class Controller {
     }
 
     public static function activate( bool $network_wide = null ) : void {
+        error_log( 'activating s3 addon' );
         if ( $network_wide ) {
             global $wpdb;
 
@@ -293,7 +330,38 @@ class Controller {
         } else {
             self::activate_for_single_site();
         }
+
+         /* Start: Call add_redirect_name function : By Maulik */
+        
+        self::add_redirect_name();
+        
+        /* End: Call add_redirect_name function  : By Maulik */
     }
+
+    /* Start: Code Here for Add redirect filed : By Maulik */
+    public static function add_redirect_name(): void  {
+        $values = self::getValue('cfredirect');
+
+        if(empty($values)){
+            global $wpdb;
+            $table_name = $wpdb->prefix . 'wp2static_addon_s3_options';
+
+            $query_string =
+             "INSERT INTO $table_name (name, value, label, description) VALUES (%s, %s, %s, %s);";
+
+            $query = $wpdb->prepare(
+                 $query_string,
+                'cfredirect',
+                '',
+                'Create page redirects found in .htaccess',
+                ''
+            );
+
+            $wpdb->query( $query );
+        }
+    }
+
+    /* End: Code Here for Add redirect filed: By Maulik */
 
     /**
      * Add WP2Static submenu
@@ -334,7 +402,7 @@ class Controller {
 
         $secret_access_key =
             $_POST['s3SecretAccessKey'] ?
-            \WP2Static\CoreOptions::encrypt_decrypt(
+            self::encrypt_decrypt(
                 'encrypt',
                 sanitize_text_field( $_POST['s3SecretAccessKey'] )
             ) : '';
@@ -353,7 +421,7 @@ class Controller {
 
         $secret_access_key =
             $_POST['cfSecretAccessKey'] ?
-            \WP2Static\CoreOptions::encrypt_decrypt(
+            self::encrypt_decrypt(
                 'encrypt',
                 sanitize_text_field( $_POST['cfSecretAccessKey'] )
             ) : '';
@@ -394,6 +462,14 @@ class Controller {
             [ 'name' => 's3RemotePath' ]
         );
 
+         /* Start: Code Here for Update checkbox value : By Maulik */
+        $wpdb->update(
+            $table_name,
+            [ 'value' => sanitize_text_field(isset($_POST['cfredirect']) ? 'yes' : 'no')],
+            [ 'name' => 'cfredirect' ]
+        );
+        /* Start: Code Here for Update checkbox value : By Maulik */
+        
         wp_safe_redirect( admin_url( 'admin.php?page=wp2static-s3' ) );
         exit;
     }

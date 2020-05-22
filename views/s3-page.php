@@ -72,7 +72,7 @@
                     name="<?php echo $view['options']['s3SecretAccessKey']->name; ?>"
                     type="password"
                     value="<?php echo $view['options']['s3SecretAccessKey']->value !== '' ?
-                        \WP2Static\CoreOptions::encrypt_decrypt('decrypt', $view['options']['s3SecretAccessKey']->value) :
+                        \WP2StaticS3\Controller::encrypt_decrypt('decrypt', $view['options']['s3SecretAccessKey']->value) :
                         ''; ?>"
                 />
             </td>
@@ -110,6 +110,24 @@
                 />
             </td>
         </tr>
+
+         <!-- Start: Code Here for HTaccess 301 rule : By Maulik -->
+         <tr>
+            <td style="width:50%;">
+                <label
+                    for="<?php echo $view['options']['cfredirect']->name; ?>"
+                ><?php echo $view['options']['cfredirect']->label; ?></label>
+            </td>
+            <td>
+                <input
+                    id="<?php echo $view['options']['cfredirect']->name; ?>"
+                    name="<?php echo $view['options']['cfredirect']->name; ?>"
+                    type="checkbox"
+                    <?php echo ($view['options']['cfredirect']->value == 'yes') ? 'checked' : ''; ?>
+                />
+            </td>
+        </tr>
+        <!-- End: Code Here for HTaccess 301 rule : By Maulik -->
 
     </tbody>
 </table>
@@ -163,7 +181,7 @@
                     name="<?php echo $view['options']['cfSecretAccessKey']->name; ?>"
                     type="password"
                     value="<?php echo $view['options']['cfSecretAccessKey']->value !== '' ?
-                        \WP2Static\CoreOptions::encrypt_decrypt('decrypt', $view['options']['cfSecretAccessKey']->value) :
+                        \WP2StaticS3\Controller::encrypt_decrypt('decrypt', $view['options']['cfSecretAccessKey']->value) :
                         ''; ?>"
                 />
             </td>
