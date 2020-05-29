@@ -20,6 +20,13 @@ class Controller {
             1
         );
 
+        add_action(
+            'admin_menu',
+            [ $this, 'addOptionsPage' ],
+            15,
+            1
+        );
+
         do_action(
             'wp2static_register_addon',
             'wp2static-addon-s3',
@@ -428,7 +435,7 @@ class Controller {
             [ 'name' => 'cfMaxPathsToInvalidate' ]
         );
 
-        wp_safe_redirect( admin_url( 'admin.php?page=wp2static-s3' ) );
+        wp_safe_redirect( admin_url( 'admin.php?page=wp2static-addon-s3' ) );
         exit;
     }
 
@@ -455,5 +462,15 @@ class Controller {
 
         return $option_value;
     }
-}
 
+    public function addOptionsPage() : void {
+         add_submenu_page(
+             null,
+             'S3 Deployment Options',
+             'S3 Deployment Options',
+             'manage_options',
+             'wp2static-addon-s3',
+             [ $this, 'renderS3Page' ]
+         );
+    }
+}
