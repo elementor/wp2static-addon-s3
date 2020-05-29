@@ -17,7 +17,7 @@ class Controller {
             'wp2static_deploy',
             [ $this, 'deploy' ],
             15,
-            1
+            2
         );
 
         add_action(
@@ -238,7 +238,11 @@ class Controller {
     }
 
 
-    public function deploy( string $processed_site_path ) : void {
+    public function deploy( string $processed_site_path, string $enabled_deployer ) : void {
+        if ( $enabled_deployer !== 'wp2static-addon-s3' ) {
+           return;
+        }
+
         \WP2Static\WsLog::l( 'S3 Addon deploying' );
 
         $s3_deployer = new Deployer();
