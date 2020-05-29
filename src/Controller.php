@@ -20,6 +20,15 @@ class Controller {
             1
         );
 
+        do_action(
+            'wp2static_register_addon',
+            'wp2static-addon-s3',
+            'deploy',
+            'S3 Deployment',
+            'https://wp2static.com/addons/s3/',
+            'Deploys to S3 with optional CloudFront cache invalidation'
+        );
+
         if ( defined( 'WP_CLI' ) ) {
             \WP_CLI::add_command(
                 'wp2static s3',
