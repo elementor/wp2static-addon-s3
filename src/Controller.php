@@ -17,7 +17,23 @@ class Controller {
             'wp2static_deploy',
             [ $this, 'deploy' ],
             15,
+            2
+        );
+
+        add_action(
+            'admin_menu',
+            [ $this, 'addOptionsPage' ],
+            15,
             1
+        );
+
+        do_action(
+            'wp2static_register_addon',
+            'wp2static-addon-s3',
+            'deploy',
+            'S3 Deployment',
+            'https://wp2static.com/addons/s3/',
+            'Deploys to S3 with optional CloudFront cache invalidation'
         );
 
         if ( defined( 'WP_CLI' ) ) {
@@ -222,7 +238,11 @@ class Controller {
     }
 
 
-    public function deploy( string $processed_site_path ) : void {
+    public function deploy( string $processed_site_path, string $enabled_deployer ) : void {
+        if ( $enabled_deployer !== 'wp2static-addon-s3' ) {
+           return;
+        }
+
         \WP2Static\WsLog::l( 'S3 Addon deploying' );
 
         $s3_deployer = new Deployer();
@@ -419,7 +439,7 @@ class Controller {
             [ 'name' => 'cfMaxPathsToInvalidate' ]
         );
 
-        wp_safe_redirect( admin_url( 'admin.php?page=wp2static-s3' ) );
+        wp_safe_redirect( admin_url( 'admin.php?page=wp2static-addon-s3' ) );
         exit;
     }
 
@@ -446,5 +466,15 @@ class Controller {
 
         return $option_value;
     }
-}
 
+    public function addOptionsPage() : void {
+         add_submenu_page(
+             null,
+             'S3 Deployment Options',
+             'S3 Deployment Options',
+             'manage_options',
+             'wp2static-addon-s3',
+             [ $this, 'renderS3Page' ]
+         );
+    }
+}
