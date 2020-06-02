@@ -82,6 +82,9 @@ class Deployer {
                     ltrim( $cache_key, '/' );
 
                 $mime_type = MimeTypes::GuessMimeType( $filename );
+                if ( "text/" === substr( $mime_type, 0, 5 ) ) {
+                    $mime_type = $mime_type . '; charset=UTF-8';
+                }
 
                 $put_data['Key'] = $s3_key;
                 $put_data['Body'] = file_get_contents( $filename );
