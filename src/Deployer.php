@@ -11,6 +11,8 @@ use Aws\Credentials\Credentials;
 
 class Deployer {
 
+    const DEFAULT_NAMESPACE = 'wp2static-addon-s3/default';
+
     // prepare deploy, if modifies URL structure, should be an action
     // $this->prepareDeploy();
 
@@ -23,6 +25,8 @@ class Deployer {
         if ( ! is_dir( $processed_site_path ) ) {
             return;
         }
+
+        $namespace = self::DEFAULT_NAMESPACE;
 
         // instantiate S3 client
         $s3 = self::s3_client();
@@ -58,7 +62,7 @@ class Deployer {
 
                 $cache_key = str_replace( $processed_site_path, '', $filename );
 
-                if ( \WP2Static\DeployCache::fileisCached( $cache_key ) ) {
+                if ( \WP2Static\DeployCache::fileisCached( $cache_key, $namespace ) ) {
                     continue;
                 }
 
@@ -93,7 +97,7 @@ class Deployer {
                 $result = $s3->putObject( $put_data );
 
                 if ( $result['@metadata']['statusCode'] === 200 ) {
-                    \WP2Static\DeployCache::addFile( $cache_key );
+                    \WP2Static\DeployCache::addFile( $cache_key, $namespace );
 
                     if ( $cf_max_paths >= count( $cf_stale_paths ) ) {
                         $cf_key = $cache_key;
