@@ -49,6 +49,8 @@ class Deployer {
             $put_data['CacheControl'] = $cache_control;
         }
 
+        $base_put_data = $put_data;
+
         $cf_max_paths = Controller::getValue( 'cfMaxPathsToInvalidate' );
         $cf_max_paths = $cf_max_paths ? intval( $cf_max_paths ) : 0;
         $cf_stale_paths = [];
@@ -106,6 +108,53 @@ class Deployer {
                         }
                         array_push( $cf_stale_paths, $cf_key );
                     }
+                }
+            }
+        }
+
+        // Deploy 301 redirects.
+
+        $put_data = $base_put_data;
+        $redirects = apply_filters( 'wp2static_list_redirects', [] );
+
+        foreach ( $redirects as $redirect ) {
+            $file_hash = md5( '301' . $redirect['redirect_to'] );
+            $cache_key = $redirect['url'];
+
+            if ( mb_substr( $cache_key, -1 ) === '/' ) {
+                $cache_key = $cache_key . 'index.html';
+            }
+
+            $is_cached = \WP2Static\DeployCache::fileisCached(
+                $cache_key,
+                $namespace,
+                $file_hash
+            );
+
+            if ( $is_cached ) {
+                continue;
+            }
+
+            $s3_key =
+                Controller::getValue( 's3RemotePath' ) ?
+                Controller::getValue( 's3RemotePath' ) . '/' .
+                ltrim( $cache_key, '/' ) :
+                ltrim( $cache_key, '/' );
+
+            $put_data['Key'] = $s3_key;
+            $put_data['WebsiteRedirectLocation'] = $redirect['redirect_to'];
+
+            $result = $s3->putObject( $put_data );
+
+            if ( $result['@metadata']['statusCode'] === 200 ) {
+                \WP2Static\DeployCache::addFile( $cache_key, $namespace, $file_hash );
+
+                if ( $cf_max_paths >= count( $cf_stale_paths ) ) {
+                    $cf_key = $cache_key;
+                    if ( 0 === substr_compare( $cf_key, '/index.html', -11) ) {
+                        $cf_key = substr( $cf_key, 0, -10 );
+                    }
+                    array_push( $cf_stale_paths, $cf_key );
                 }
             }
         }
