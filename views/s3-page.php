@@ -127,6 +127,27 @@
             </td>
         </tr>
 
+        <tr>
+            <td style="width:50%;">
+                <label
+                    for="<?php echo $view['options']['s3ObjectACL']->name; ?>"
+                ><?php echo $view['options']['s3ObjectACL']->label; ?></label>
+            </td>
+            <td>
+                <select
+                    id="<?php echo $view['options']['s3ObjectACL']->name; ?>"
+                    name="<?php echo $view['options']['s3ObjectACL']->name; ?>"
+                >
+                    <option
+                        <?php if ( $view['options']['s3ObjectACL']->value === 'public-read' ) { echo "selected"; } ?>
+                        value="public-read">public-read</option>
+                    <option
+                        <?php if ( $view['options']['s3ObjectACL']->value === 'private' ) { echo "selected"; } ?>
+                        value="private">private</option>
+                </select>
+            </td>
+        </tr>
+
     </tbody>
 </table>
 
