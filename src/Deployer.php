@@ -39,9 +39,10 @@ class Deployer {
             )
         );
 
+        $object_acl = Controller::getValue( 's3ObjectACL' );
         $put_data = [
             'Bucket' => Controller::getValue( 's3Bucket' ),
-            'ACL'    => 'public-read',
+            'ACL'    => $object_acl === '' ? 'public-read' : $object_acl,
         ];
 
         $cache_control = Controller::getValue( 's3CacheControl' );
