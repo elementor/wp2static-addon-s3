@@ -197,6 +197,16 @@ class Controller {
 
         $query = $wpdb->prepare(
             $query_string,
+            's3ObjectACL',
+            'public-read',
+            'Object ACL',
+            ''
+        );
+
+        $wpdb->query( $query );
+
+        $query = $wpdb->prepare(
+            $query_string,
             'cfMaxPathsToInvalidate',
             '',
             'Maximum number of paths to invalidate before triggering a full invalidation',
@@ -435,6 +445,12 @@ class Controller {
 
         $wpdb->update(
             $table_name,
+            [ 'value' => sanitize_text_field( $_POST['s3ObjectACL'] ) ],
+            [ 'name' => 's3ObjectACL' ]
+        );
+
+        $wpdb->update(
+            $table_name,
             [ 'value' => sanitize_text_field( $_POST['cfMaxPathsToInvalidate'] ) ],
             [ 'name' => 'cfMaxPathsToInvalidate' ]
         );
@@ -478,3 +494,4 @@ class Controller {
          );
     }
 }
+

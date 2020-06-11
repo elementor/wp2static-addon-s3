@@ -39,9 +39,10 @@ class Deployer {
             )
         );
 
+        $object_acl = Controller::getValue( 's3ObjectACL' );
         $put_data = [
             'Bucket' => Controller::getValue( 's3Bucket' ),
-            'ACL'    => 'public-read',
+            'ACL'    => $object_acl === '' ? 'public-read' : $object_acl,
         ];
 
         $cache_control = Controller::getValue( 's3CacheControl' );
@@ -63,10 +64,6 @@ class Deployer {
                 // TODO: do filepaths differ when running from WP-CLI (non-chroot)?
 
                 $cache_key = str_replace( $processed_site_path, '', $filename );
-
-                if ( \WP2Static\DeployCache::fileisCached( $cache_key, $namespace ) ) {
-                    continue;
-                }
 
                 if ( ! $real_filepath ) {
                     $err = 'Trying to deploy unknown file to S3: ' . $filename;
@@ -93,13 +90,26 @@ class Deployer {
                 }
 
                 $put_data['Key'] = $s3_key;
-                $put_data['Body'] = file_get_contents( $filename );
                 $put_data['ContentType'] = $mime_type;
+                $put_data_hash = md5( json_encode( $put_data ) );
+                $put_data['Body'] = file_get_contents( $filename );
+                $body_hash = md5( $put_data['Body'] );
+                $hash = md5( $put_data_hash . $body_hash );
+
+                $is_cached = \WP2Static\DeployCache::fileisCached(
+                    $cache_key,
+                    $namespace,
+                    $hash,
+                );
+
+                if ( $is_cached ) {
+                    continue;
+                }
 
                 $result = $s3->putObject( $put_data );
 
                 if ( $result['@metadata']['statusCode'] === 200 ) {
-                    \WP2Static\DeployCache::addFile( $cache_key, $namespace );
+                    \WP2Static\DeployCache::addFile( $cache_key, $namespace, $hash );
 
                     if ( $cf_max_paths >= count( $cf_stale_paths ) ) {
                         $cf_key = $cache_key;
@@ -118,21 +128,10 @@ class Deployer {
         $redirects = apply_filters( 'wp2static_list_redirects', [] );
 
         foreach ( $redirects as $redirect ) {
-            $file_hash = md5( '301' . $redirect['redirect_to'] );
             $cache_key = $redirect['url'];
 
             if ( mb_substr( $cache_key, -1 ) === '/' ) {
                 $cache_key = $cache_key . 'index.html';
-            }
-
-            $is_cached = \WP2Static\DeployCache::fileisCached(
-                $cache_key,
-                $namespace,
-                $file_hash
-            );
-
-            if ( $is_cached ) {
-                continue;
             }
 
             $s3_key =
@@ -143,11 +142,22 @@ class Deployer {
 
             $put_data['Key'] = $s3_key;
             $put_data['WebsiteRedirectLocation'] = $redirect['redirect_to'];
+            $hash = md5( json_encode( $put_data ) );
+
+            $is_cached = \WP2Static\DeployCache::fileisCached(
+                $cache_key,
+                $namespace,
+                $hash,
+            );
+
+            if ( $is_cached ) {
+                continue;
+            }
 
             $result = $s3->putObject( $put_data );
 
             if ( $result['@metadata']['statusCode'] === 200 ) {
-                \WP2Static\DeployCache::addFile( $cache_key, $namespace, $file_hash );
+                \WP2Static\DeployCache::addFile( $cache_key, $namespace, $hash );
 
                 if ( $cf_max_paths >= count( $cf_stale_paths ) ) {
                     $cf_key = $cache_key;
