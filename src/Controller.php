@@ -233,6 +233,8 @@ class Controller {
     }
 
     public static function renderS3Page() : void {
+        self::seedOptions();
+
         $view = [];
         $view['nonce_action'] = 'wp2static-s3-options';
         $view['uploads_path'] = \WP2Static\SiteInfo::getPath( 'uploads' );
@@ -280,9 +282,7 @@ class Controller {
 
         $options = self::getOptions();
 
-        if ( ! isset( $options['s3Bucket'] ) ) {
-            self::seedOptions();
-        }
+        self::seedOptions();
     }
 
     public static function deactivate_for_single_site() : void {
