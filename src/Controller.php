@@ -233,6 +233,7 @@ class Controller {
     }
 
     public static function renderS3Page() : void {
+        self::createOptionsTable();
         self::seedOptions();
 
         $view = [];
@@ -261,7 +262,7 @@ class Controller {
         $s3_deployer->upload_files( $processed_site_path );
     }
 
-    public static function activate_for_single_site() : void {
+    public static function createOptionsTable() : void {
         global $wpdb;
 
         $table_name = $wpdb->prefix . 'wp2static_addon_s3_options';
@@ -279,7 +280,10 @@ class Controller {
 
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';
         dbDelta( $sql );
+    }
 
+    public static function activate_for_single_site(): void {
+        self::createOptionsTable();
         self::seedOptions();
     }
 
