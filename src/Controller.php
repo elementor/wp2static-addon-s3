@@ -280,8 +280,6 @@ class Controller {
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';
         dbDelta( $sql );
 
-        $options = self::getOptions();
-
         self::seedOptions();
     }
 
