@@ -73,7 +73,7 @@ class Controller {
         $table_name = $wpdb->prefix . 'wp2static_addon_s3_options';
 
         $query_string =
-            "INSERT INTO $table_name (name, value, label, description) VALUES (%s, %s, %s, %s);";
+            "INSERT IGNORE INTO $table_name (name, value, label, description) VALUES (%s, %s, %s, %s);";
 
         $query = $wpdb->prepare(
             $query_string,
@@ -233,6 +233,8 @@ class Controller {
     }
 
     public static function renderS3Page() : void {
+        self::seedOptions();
+
         $view = [];
         $view['nonce_action'] = 'wp2static-s3-options';
         $view['uploads_path'] = \WP2Static\SiteInfo::getPath( 'uploads' );
@@ -268,7 +270,7 @@ class Controller {
 
         $sql = "CREATE TABLE $table_name (
             id mediumint(9) NOT NULL AUTO_INCREMENT,
-            name VARCHAR(255) NOT NULL,
+            name VARCHAR(255) NOT NULL UNIQUE,
             value VARCHAR(255) NOT NULL,
             label VARCHAR(255) NULL,
             description VARCHAR(255) NULL,
@@ -280,9 +282,7 @@ class Controller {
 
         $options = self::getOptions();
 
-        if ( ! isset( $options['s3Bucket'] ) ) {
-            self::seedOptions();
-        }
+        self::seedOptions();
     }
 
     public static function deactivate_for_single_site() : void {
