@@ -85,15 +85,15 @@ class Deployer {
                     ltrim( $cache_key, '/' );
 
                 $mime_type = MimeTypes::GuessMimeType( $filename );
-                if ( "text/" === substr( $mime_type, 0, 5 ) ) {
+                if ( 'text/' === substr( $mime_type, 0, 5 ) ) {
                     $mime_type = $mime_type . '; charset=UTF-8';
                 }
 
                 $put_data['Key'] = $s3_key;
                 $put_data['ContentType'] = $mime_type;
-                $put_data_hash = md5( json_encode( $put_data ) );
+                $put_data_hash = md5( (string) json_encode( $put_data ) );
                 $put_data['Body'] = file_get_contents( $filename );
-                $body_hash = md5( $put_data['Body'] );
+                $body_hash = md5( (string) $put_data['Body'] );
                 $hash = md5( $put_data_hash . $body_hash );
 
                 $is_cached = \WP2Static\DeployCache::fileisCached(
@@ -113,7 +113,7 @@ class Deployer {
 
                     if ( $cf_max_paths >= count( $cf_stale_paths ) ) {
                         $cf_key = $cache_key;
-                        if ( 0 === substr_compare( $cf_key, '/index.html', -11) ) {
+                        if ( 0 === substr_compare( $cf_key, '/index.html', -11 ) ) {
                             $cf_key = substr( $cf_key, 0, -10 );
                         }
                         array_push( $cf_stale_paths, $cf_key );
@@ -142,7 +142,7 @@ class Deployer {
 
             $put_data['Key'] = $s3_key;
             $put_data['WebsiteRedirectLocation'] = $redirect['redirect_to'];
-            $hash = md5( json_encode( $put_data ) );
+            $hash = md5( (string) json_encode( $put_data ) );
 
             $is_cached = \WP2Static\DeployCache::fileisCached(
                 $cache_key,
@@ -161,7 +161,7 @@ class Deployer {
 
                 if ( $cf_max_paths >= count( $cf_stale_paths ) ) {
                     $cf_key = $cache_key;
-                    if ( 0 === substr_compare( $cf_key, '/index.html', -11) ) {
+                    if ( 0 === substr_compare( $cf_key, '/index.html', -11 ) ) {
                         $cf_key = substr( $cf_key, 0, -10 );
                     }
                     array_push( $cf_stale_paths, $cf_key );
@@ -170,7 +170,7 @@ class Deployer {
         }
 
         $distribution_id = Controller::getValue( 'cfDistributionID' );
-        $num_stale = count ( $cf_stale_paths );
+        $num_stale = count( $cf_stale_paths );
         if ( $distribution_id && $num_stale > 0 ) {
             if ( $num_stale > $cf_max_paths ) {
                 self::cloudfront_invalidate_all_items();
@@ -207,7 +207,7 @@ class Deployer {
                     Controller::getValue( 's3SecretAccessKey' )
                 ),
             ];
-        } else if ( Controller::getValue( 's3Profile' ) ) {
+        } elseif ( Controller::getValue( 's3Profile' ) ) {
             $client_options['profile'] = Controller::getValue( 's3Profile' );
         }
 
@@ -241,7 +241,7 @@ class Deployer {
                     'credentials' => $credentials,
                 ]
             );
-        } else if ( Controller::getValue( 'cfProfile' ) ) {
+        } elseif ( Controller::getValue( 'cfProfile' ) ) {
             // Use the specified profile.
             $client = \Aws\CloudFront\CloudFrontClient::factory(
                 [
@@ -263,8 +263,12 @@ class Deployer {
         return $client;
     }
 
-    public static function create_invalidation( string $distribution_id, array $items )
-    : string {
+    /**
+     * Create invalidation in CloudFront
+     *
+     * @param mixed[] $items mixed array
+     */
+    public static function create_invalidation( string $distribution_id, array $items ) : string {
         $client = self::cloudfront_client();
 
         return $client->createInvalidation(
@@ -289,8 +293,10 @@ class Deployer {
         \WP2Static\WsLog::l( 'Invalidating all CloudFront paths' );
 
         try {
-            self::create_invalidation( Controller::getValue( 'cfDistributionID' ),
-                                       [ '/*' ]);
+            self::create_invalidation(
+                Controller::getValue( 'cfDistributionID' ),
+                [ '/*' ]
+            );
         } catch ( AwsException $e ) {
             // output error message if fails
             error_log( $e->getMessage() );

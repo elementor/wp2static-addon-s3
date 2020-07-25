@@ -73,7 +73,8 @@ class Controller {
         $table_name = $wpdb->prefix . 'wp2static_addon_s3_options';
 
         $query_string =
-            "INSERT IGNORE INTO $table_name (name, value, label, description) VALUES (%s, %s, %s, %s);";
+            "INSERT IGNORE INTO $table_name (name, value, label, description) " .
+            'VALUES (%s, %s, %s, %s);';
 
         $query = $wpdb->prepare(
             $query_string,
@@ -253,7 +254,7 @@ class Controller {
 
     public function deploy( string $processed_site_path, string $enabled_deployer ) : void {
         if ( $enabled_deployer !== 'wp2static-addon-s3' ) {
-           return;
+            return;
         }
 
         \WP2Static\WsLog::l( 'S3 Addon deploying' );
@@ -284,7 +285,7 @@ class Controller {
         // dbDelta doesn't handle unique indexes well.
         $indexes = $wpdb->query( "SHOW INDEX FROM $table_name WHERE key_name = 'name'" );
         if ( 0 === $indexes ) {
-	    $result = $wpdb->query( "CREATE UNIQUE INDEX name ON $table_name (name)" );
+            $result = $wpdb->query( "CREATE UNIQUE INDEX name ON $table_name (name)" );
             if ( false === $result ) {
                 \WP2Static\WsLog::l( "Failed to create 'name' index on $table_name." );
             }
@@ -495,14 +496,14 @@ class Controller {
     }
 
     public function addOptionsPage() : void {
-         add_submenu_page(
-             null,
-             'S3 Deployment Options',
-             'S3 Deployment Options',
-             'manage_options',
-             'wp2static-addon-s3',
-             [ $this, 'renderS3Page' ]
-         );
+        add_submenu_page(
+            '',
+            'S3 Deployment Options',
+            'S3 Deployment Options',
+            'manage_options',
+            'wp2static-addon-s3',
+            [ $this, 'renderS3Page' ]
+        );
     }
 }
 
