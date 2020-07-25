@@ -271,7 +271,7 @@ class Controller {
 
         $sql = "CREATE TABLE $table_name (
             id mediumint(9) NOT NULL AUTO_INCREMENT,
-            name VARCHAR(255) NOT NULL UNIQUE,
+            name VARCHAR(255) NOT NULL,
             value VARCHAR(255) NOT NULL,
             label VARCHAR(255) NULL,
             description VARCHAR(255) NULL,
@@ -280,6 +280,15 @@ class Controller {
 
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';
         dbDelta( $sql );
+
+        // dbDelta doesn't handle unique indexes well.
+        $indexes = $wpdb->query( "SHOW INDEX FROM $table_name WHERE key_name = 'name'" );
+        if ( 0 === $indexes ) {
+	    $result = $wpdb->query( "CREATE UNIQUE INDEX name ON $table_name (name)" );
+            if ( false === $result ) {
+                \WP2Static\WsLog::l( "Failed to create 'name' index on $table_name." );
+            }
+        }
     }
 
     public static function activate_for_single_site(): void {
