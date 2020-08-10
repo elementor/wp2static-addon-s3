@@ -117,6 +117,7 @@ class Deployer {
                         if ( 0 === substr_compare( $cf_key, '/index.html', -11 ) ) {
                             $cf_key = substr( $cf_key, 0, -10 );
                         }
+                        $cf_key = str_replace( ' ', '%20', $cf_key );
                         array_push( $cf_stale_paths, $cf_key );
                     }
                 }
@@ -165,6 +166,7 @@ class Deployer {
                     if ( 0 === substr_compare( $cf_key, '/index.html', -11 ) ) {
                         $cf_key = substr( $cf_key, 0, -10 );
                     }
+                    $cf_key = str_replace( ' ', '%20', $cf_key );
                     array_push( $cf_stale_paths, $cf_key );
                 }
             }
