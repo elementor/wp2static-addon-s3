@@ -8,6 +8,7 @@ use Aws\S3\S3Client;
 use Aws\CloudFront\CloudFrontClient;
 use Aws\Exception\AwsException;
 use Aws\Credentials\Credentials;
+use WP2Static\WsLog;
 
 class Deployer {
 
@@ -173,11 +174,12 @@ class Deployer {
         $num_stale = count( $cf_stale_paths );
         if ( $distribution_id && $num_stale > 0 ) {
             if ( $num_stale > $cf_max_paths ) {
-                self::cloudfront_invalidate_all_items();
+                WsLog::l( 'Invalidating all CloudFront paths' );
+                self::invalidate_items( $distribution_id, [ '/*' ] );
             } else {
                 $path_text = ( $num_stale === 1 ) ? 'path' : 'paths';
-                \WP2Static\WsLog::l( "Invalidating $num_stale CloudFront $path_text" );
-                self::create_invalidation( $distribution_id, $cf_stale_paths );
+                WsLog::l( "Invalidating $num_stale CloudFront $path_text" );
+                self::invalidate_items( $distribution_id, $cf_stale_paths );
             }
         }
     }
@@ -285,22 +287,13 @@ class Deployer {
         );
     }
 
-    public static function cloudfront_invalidate_all_items() : void {
-        if ( ! Controller::getValue( 'cfDistributionID' ) ) {
-            return;
-        }
-
-        \WP2Static\WsLog::l( 'Invalidating all CloudFront paths' );
-
+    public static function invalidate_items( string $distribution_id, array $items ) : ?string {
         try {
-            self::create_invalidation(
-                Controller::getValue( 'cfDistributionID' ),
-                [ '/*' ]
-            );
-        } catch ( AwsException $e ) {
-            // output error message if fails
-            error_log( $e->getMessage() );
+            return self::create_invalidation( $distribution_id, $items );
+        } catch (AwsException $e) {
+            WsLog::l( 'Error creating CloudFront invalidation: ' . $e->getMessage() );
+            return null;
         }
     }
-}
 
+}
