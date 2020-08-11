@@ -289,6 +289,11 @@ class Deployer {
         );
     }
 
+    /**
+     * Invalidate paths in CloudFront, catching and logging exceptions.
+     *
+     * @param mixed[] $items mixed array
+     */
     public static function invalidate_items( string $distribution_id, array $items ) : ?string {
         try {
             return self::create_invalidation( $distribution_id, $items );
