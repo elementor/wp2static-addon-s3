@@ -292,7 +292,7 @@ class Deployer {
     public static function invalidate_items( string $distribution_id, array $items ) : ?string {
         try {
             return self::create_invalidation( $distribution_id, $items );
-        } catch (AwsException $e) {
+        } catch ( AwsException $e ) {
             WsLog::l( 'Error creating CloudFront invalidation: ' . $e->getMessage() );
             return null;
         }
