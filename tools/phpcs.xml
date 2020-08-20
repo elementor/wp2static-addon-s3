@@ -10,6 +10,9 @@
   -->
   <arg name="colors" />
   <arg name="tab-width" value="2" />
+  <rule ref="PSR1">
+    <exclude-pattern>/wp2static-addon-s3.php</exclude-pattern>
+  </rule>
   <!-- Custom line length validation -->
   <rule ref="Generic.Files.LineLength">
     <properties>
