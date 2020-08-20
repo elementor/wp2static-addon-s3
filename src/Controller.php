@@ -260,7 +260,7 @@ class Controller {
         \WP2Static\WsLog::l( 'S3 Addon deploying' );
 
         $s3_deployer = new Deployer();
-        $s3_deployer->upload_files( $processed_site_path );
+        $s3_deployer->uploadFiles( $processed_site_path );
     }
 
     public static function createOptionsTable() : void {
@@ -292,12 +292,12 @@ class Controller {
         }
     }
 
-    public static function activate_for_single_site(): void {
+    public static function activateForSingleSite(): void {
         self::createOptionsTable();
         self::seedOptions();
     }
 
-    public static function deactivate_for_single_site() : void {
+    public static function deactivateForSingleSite() : void {
     }
 
     public static function deactivate( bool $network_wide = null ) : void {
@@ -316,12 +316,12 @@ class Controller {
 
             foreach ( $site_ids as $site_id ) {
                 switch_to_blog( $site_id );
-                self::deactivate_for_single_site();
+                self::deactivateForSingleSite();
             }
 
             restore_current_blog();
         } else {
-            self::deactivate_for_single_site();
+            self::deactivateForSingleSite();
         }
     }
 
@@ -341,12 +341,12 @@ class Controller {
 
             foreach ( $site_ids as $site_id ) {
                 switch_to_blog( $site_id );
-                self::activate_for_single_site();
+                self::activateForSingleSite();
             }
 
             restore_current_blog();
         } else {
-            self::activate_for_single_site();
+            self::activateForSingleSite();
         }
     }
 

@@ -5,7 +5,7 @@ namespace WP2StaticS3;
 class MimeTypes {
     /*
      * Takes a filename and returns its mimetype.
-     * GuessMimeTypes first looks at the file extension and looks it up
+     * guessMimeTypes first looks at the file extension and looks it up
      * in an array of known mimetypes. If that lookup misses, it uses
      * finfo to guess the mimetype based on magic bytes. If that also fails,
      * "application/octet-stream" is returned.
@@ -13,7 +13,7 @@ class MimeTypes {
      * @param string $filename filename
      * @return string mimetype
      */
-    public static function GuessMimeType( string $filename ) : string {
+    public static function guessMimeType( string $filename ) : string {
         static $mime_types = [
             '123' => 'application/vnd.lotus-1-2-3',
             '3dml' => 'text/vnd.in3d.3dml',

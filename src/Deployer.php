@@ -21,7 +21,7 @@ class Deployer {
 
     public function __construct() {}
 
-    public function upload_files( string $processed_site_path ) : void {
+    public function uploadFiles( string $processed_site_path ) : void {
         // check if dir exists
         if ( ! is_dir( $processed_site_path ) ) {
             return;
@@ -30,7 +30,7 @@ class Deployer {
         $namespace = self::DEFAULT_NAMESPACE;
 
         // instantiate S3 client
-        $s3 = self::s3_client();
+        $s3 = self::s3Client();
 
         // iterate each file in ProcessedSite
         $iterator = new RecursiveIteratorIterator(
@@ -85,7 +85,7 @@ class Deployer {
                     ltrim( $cache_key, '/' ) :
                     ltrim( $cache_key, '/' );
 
-                $mime_type = MimeTypes::GuessMimeType( $filename );
+                $mime_type = MimeTypes::guessMimeType( $filename );
                 if ( 'text/' === substr( $mime_type, 0, 5 ) ) {
                     $mime_type = $mime_type . '; charset=UTF-8';
                 }
@@ -177,16 +177,16 @@ class Deployer {
         if ( $distribution_id && $num_stale > 0 ) {
             if ( $num_stale > $cf_max_paths ) {
                 WsLog::l( 'Invalidating all CloudFront paths' );
-                self::invalidate_items( $distribution_id, [ '/*' ] );
+                self::invalidateItems( $distribution_id, [ '/*' ] );
             } else {
                 $path_text = ( $num_stale === 1 ) ? 'path' : 'paths';
                 WsLog::l( "Invalidating $num_stale CloudFront $path_text" );
-                self::invalidate_items( $distribution_id, $cf_stale_paths );
+                self::invalidateItems( $distribution_id, $cf_stale_paths );
             }
         }
     }
 
-    public static function s3_client() : \Aws\S3\S3Client {
+    public static function s3Client() : \Aws\S3\S3Client {
         $client_options = [
             'version' => 'latest',
             'region' => Controller::getValue( 's3Region' ),
@@ -218,7 +218,7 @@ class Deployer {
         return new \Aws\S3\S3Client( $client_options );
     }
 
-    public static function cloudfront_client() : \Aws\CloudFront\CloudFrontClient {
+    public static function cloudfrontClient() : \Aws\CloudFront\CloudFrontClient {
         /*
             If no credentials option, SDK attempts to load credentials from
             your environment in the following order:
@@ -272,8 +272,8 @@ class Deployer {
      *
      * @param mixed[] $items mixed array
      */
-    public static function create_invalidation( string $distribution_id, array $items ) : string {
-        $client = self::cloudfront_client();
+    public static function createInvalidation( string $distribution_id, array $items ) : string {
+        $client = self::cloudfrontClient();
 
         return $client->createInvalidation(
             [
@@ -294,9 +294,9 @@ class Deployer {
      *
      * @param mixed[] $items mixed array
      */
-    public static function invalidate_items( string $distribution_id, array $items ) : ?string {
+    public static function invalidateItems( string $distribution_id, array $items ) : ?string {
         try {
-            return self::create_invalidation( $distribution_id, $items );
+            return self::createInvalidation( $distribution_id, $items );
         } catch ( AwsException $e ) {
             WsLog::l( 'Error creating CloudFront invalidation: ' . $e->getMessage() );
             return null;
