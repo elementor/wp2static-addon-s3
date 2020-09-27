@@ -2,7 +2,7 @@
 
 ######################################
 ##
-## Build WP2Static Zip Deployment Addon
+## Build WP2Static S3 Deployment Addon
 ##
 ## script archive_name dont_minify
 ##
@@ -38,7 +38,7 @@ cd $TMP_DIR
 find . -type d -exec chmod 755 {} \;
 find . -type f -exec chmod 644 {} \;
 
-zip -r -9 ./$1.zip ./wp2static-addon-s3
+zip --quiet -r -9 ./$1.zip ./wp2static-addon-s3
 
 cd -
 
