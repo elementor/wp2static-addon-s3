@@ -31,7 +31,7 @@
         "phpunit/phpunit": "*",
         "dealerdirect/phpcodesniffer-composer-installer": "*",
         "wp-coding-standards/wpcs": "*",
-        "jakub-onderka/php-parallel-lint": "*",
+        "php-parallel-lint/php-parallel-lint": "*",
         "10up/wp_mock": "^0.4.2"
     },
     "autoload": {
