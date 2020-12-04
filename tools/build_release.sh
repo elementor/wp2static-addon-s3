@@ -29,7 +29,6 @@ composer install --quiet --no-dev --optimize-autoloader
 cp -r $EXEC_DIR/*.php $TMP_DIR/wp2static-addon-s3/
 cp -r $EXEC_DIR/src $TMP_DIR/wp2static-addon-s3/
 cp -r $EXEC_DIR/vendor $TMP_DIR/wp2static-addon-s3/
-cp -r $EXEC_DIR/README.txt $TMP_DIR/wp2static-addon-s3/
 cp -r $EXEC_DIR/views $TMP_DIR/wp2static-addon-s3/
 
 cd $TMP_DIR
