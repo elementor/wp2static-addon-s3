@@ -4,7 +4,7 @@
  * Plugin Name:       WP2Static Add-on: S3 Deployment
  * Plugin URI:        https://wp2static.com
  * Description:       AWS S3 deployment add-on for WP2Static.
- * Version:           1.0
+ * Version:           1.0.1-dev
  * Author:            Leon Stafford
  * Author URI:        https://ljs.dev
  * License:           Unlicense
@@ -17,7 +17,7 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 define( 'WP2STATIC_S3_PATH', plugin_dir_path( __FILE__ ) );
-define( 'WP2STATIC_S3_VERSION', '1.0' );
+define( 'WP2STATIC_S3_VERSION', '1.0.1-dev' );
 
 if ( file_exists( WP2STATIC_S3_PATH . 'vendor/autoload.php' ) ) {
     require_once WP2STATIC_S3_PATH . 'vendor/autoload.php';
