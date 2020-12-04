@@ -21,7 +21,7 @@
     ],
     "require": {
         "php": ">=7.3",
-        "aws/aws-sdk-php": "*"
+        "aws/aws-sdk-php": "^3.166.1"
     },
     "require-dev": {
         "phpstan/phpstan": "*",
@@ -31,6 +31,7 @@
         "phpunit/phpunit": "*",
         "dealerdirect/phpcodesniffer-composer-installer": "*",
         "wp-coding-standards/wpcs": "*",
+        "phpcompatibility/php-compatibility": "*",
         "php-parallel-lint/php-parallel-lint": "*",
         "10up/wp_mock": "^0.4.2"
     },
@@ -59,11 +60,14 @@
         "phpcs": "vendor/bin/phpcs --standard=./tools/phpcs.xml --ignore=*/tests/*,*/admin/*,**/coverage/*,*.js,*/vendor/*,*/views/*.php ./",
         "phpcbf": "vendor/bin/phpcbf --standard=./tools/phpcs.xml --ignore=*/js/*,*/tests/*,*/admin/*,*/coverage/*,*.js,*/vendor/*,*/views/*.php ./",
         "phpunit": "vendor/bin/phpunit ./tests/unit/",
+        "phpcompat": "vendor/bin/phpcs --standard=PHPCompatibility --runtime-set testVersion 7.3 --ignore=*/tests/*,*/admin/*,**/coverage/*,*.js,*/vendor/*,*/views/*.php ./",
         "coverage": "vendor/bin/phpunit tests/unit --coverage-html coverage --whitelist src/",
         "lint": "vendor/bin/parallel-lint --exclude vendor .",
         "test": [
+            "composer validate --strict",
             "@lint",
             "@phpcs",
+            "@phpcompat",
             "@phpstan"
         ],
         "build": "/bin/sh tools/build_release.sh"
