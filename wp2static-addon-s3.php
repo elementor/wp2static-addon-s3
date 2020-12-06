@@ -5,11 +5,11 @@
  * Plugin URI:        https://wp2static.com
  * Description:       AWS S3 deployment add-on for WP2Static.
  * Version:           1.0.1-dev
+ * Requires PHP:      7.3
  * Author:            Leon Stafford
  * Author URI:        https://ljs.dev
  * License:           Unlicense
  * License URI:       http://unlicense.org
- * Text Domain:       wp2static-addon-s3
  */
 
 if ( ! defined( 'WPINC' ) ) {
@@ -23,7 +23,7 @@ if ( file_exists( WP2STATIC_S3_PATH . 'vendor/autoload.php' ) ) {
     require_once WP2STATIC_S3_PATH . 'vendor/autoload.php';
 }
 
-function run_wp2static_addon_s3() {
+function run_wp2static_addon_s3() : void {
     $controller = new WP2StaticS3\Controller();
     $controller->run();
 }

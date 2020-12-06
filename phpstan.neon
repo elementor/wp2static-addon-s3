@@ -4,9 +4,11 @@ includes:
     - vendor/szepeviktor/phpstan-wordpress/extension.neon
 parameters:
     level: max
+    phpVersion: 80000
     inferPrivatePropertyTypeFromConstructor: true
     paths:
         - %currentWorkingDirectory%/src/
+        - %currentWorkingDirectory%/wp2static-addon-s3.php
     scanFiles:
         - %currentWorkingDirectory%/tests/phpstan/bootstrap.php
         - %currentWorkingDirectory%/tests/phpstan/wp-cli-stubs-2.2.0.php

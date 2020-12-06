@@ -13,7 +13,7 @@ jobs:
 
     strategy:
       matrix:
-        php: [7.3.9]
+        php: ["7.3", "7.4"]
 
     name: PHP-${{ matrix.php }} 
 
@@ -38,7 +38,7 @@ jobs:
       run: composer validate --strict
 
     - name: Install PHP dependencies
-      run: composer install --no-interaction --no-suggest
+      run: composer install --no-interaction
 
     - name: Run our Linter and PHPStan
-      run: composer test
+      run: composer run-script test

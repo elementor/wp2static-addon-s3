@@ -20,7 +20,7 @@ class CLI {
      * @param string[] $args CLI args
      * @param string[] $assoc_args CLI args
      */
-    public function s3(
+    public static function s3(
         array $args,
         array $assoc_args
     ) : void {
