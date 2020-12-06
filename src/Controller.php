@@ -4,7 +4,10 @@ namespace WP2StaticS3;
 
 class Controller {
     public function run() : void {
-        add_filter( 'wp2static_add_menu_items', [ 'WP2StaticS3\Controller', 'addSubmenuPage' ] );
+        add_filter(
+            'wp2static_add_menu_items',
+            [ 'WP2StaticS3\Controller', 'addSubmenuPage' ]
+        );
 
         add_action(
             'admin_post_wp2static_s3_save_options',
@@ -39,7 +42,7 @@ class Controller {
         if ( defined( 'WP_CLI' ) ) {
             \WP_CLI::add_command(
                 'wp2static s3',
-                [ 'WP2StaticS3\CLI', 's3' ]
+                [ CLI::class, 's3' ]
             );
         }
     }
