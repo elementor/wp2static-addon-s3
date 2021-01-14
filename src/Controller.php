@@ -275,7 +275,7 @@ class Controller {
 
         $sql = "CREATE TABLE $table_name (
             id mediumint(9) NOT NULL AUTO_INCREMENT,
-            name VARCHAR(255) NOT NULL,
+            name VARCHAR(191) NOT NULL,
             value VARCHAR(255) NOT NULL,
             label VARCHAR(255) NULL,
             description VARCHAR(255) NULL,
