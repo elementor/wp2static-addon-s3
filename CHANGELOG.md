@@ -5,6 +5,7 @@
  - update GH actions for PHP 7.3 and 7.4 testing
  - PHPStan test PHP 8
  - expand PHPStan analysis coverage
+ - fix column lengths for indexes on older MariaDB/MySQL envs
 
 ## WP2Static S3 Add-on 1.0
 
