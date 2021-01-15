@@ -10,10 +10,8 @@
   -->
   <arg name="colors" />
   <arg name="tab-width" value="2" />
-  <rule ref="PSR1">
-    <exclude-pattern>/wp2static-addon-s3.php</exclude-pattern>
-  </rule>
   <!-- Custom line length validation -->
+  <rule ref="Squiz.PHP.DiscouragedFunctions" />
   <rule ref="Generic.Files.LineLength">
     <properties>
       <property name="lineLimit" value="100" />
@@ -50,6 +48,7 @@
   <rule ref="WordPress">
     <exclude name="Generic.CodeAnalysis.ForLoopWithTestFunctionCall.NotAllowed" />
     <exclude name="Generic.Commenting.DocComment.ShortNotCapital" />
+    <exclude name="Generic.Commenting.DocComment.MissingShort" />
     <exclude name="Generic.Formatting.MultipleStatementAlignment.NotSameWarning" />
     <exclude name="Generic.Functions.OpeningFunctionBraceKernighanRitchie.BraceOnNewLine" />
     <exclude name="Generic.PHP.NoSilencedErrors.Discouraged" />

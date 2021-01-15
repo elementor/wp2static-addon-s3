@@ -1,6 +1,6 @@
 <?php
-// phpcs:disable Generic.Files.LineLength.MaxExceeded                              
-// phpcs:disable Generic.Files.LineLength.TooLong                                  
+// phpcs:disable Generic.Files.LineLength.MaxExceeded
+// phpcs:disable Generic.Files.LineLength.TooLong
 
 /**
  * @var mixed[] $view
@@ -14,7 +14,7 @@
 <form
     name="wp2static-s3-save-options"
     method="POST"
-    action="<?php echo esc_url( admin_url('admin-post.php') ); ?>">
+    action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 
     <?php wp_nonce_field( $view['nonce_action'] ); ?>
     <input name="action" type="hidden" value="wp2static_s3_save_options" />
@@ -81,7 +81,7 @@
                     name="<?php echo $view['options']['s3SecretAccessKey']->name; ?>"
                     type="password"
                     value="<?php echo $view['options']['s3SecretAccessKey']->value !== '' ?
-                        \WP2Static\CoreOptions::encrypt_decrypt('decrypt', $view['options']['s3SecretAccessKey']->value) :
+                        \WP2Static\CoreOptions::encrypt_decrypt( 'decrypt', $view['options']['s3SecretAccessKey']->value ) :
                         ''; ?>"
                 />
             </td>
@@ -148,10 +148,12 @@
                     name="<?php echo $view['options']['s3ObjectACL']->name; ?>"
                 >
                     <option
-                        <?php if ( $view['options']['s3ObjectACL']->value === 'public-read' ) { echo "selected"; } ?>
+                        <?php if ( $view['options']['s3ObjectACL']->value === 'public-read' ) {
+                            echo 'selected'; } ?>
                         value="public-read">public-read</option>
                     <option
-                        <?php if ( $view['options']['s3ObjectACL']->value === 'private' ) { echo "selected"; } ?>
+                        <?php if ( $view['options']['s3ObjectACL']->value === 'private' ) {
+                            echo 'selected'; } ?>
                         value="private">private</option>
                 </select>
             </td>
@@ -209,7 +211,7 @@
                     name="<?php echo $view['options']['cfSecretAccessKey']->name; ?>"
                     type="password"
                     value="<?php echo $view['options']['cfSecretAccessKey']->value !== '' ?
-                        \WP2Static\CoreOptions::encrypt_decrypt('decrypt', $view['options']['cfSecretAccessKey']->value) :
+                        \WP2Static\CoreOptions::encrypt_decrypt( 'decrypt', $view['options']['cfSecretAccessKey']->value ) :
                         ''; ?>"
                 />
             </td>
