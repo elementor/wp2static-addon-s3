@@ -1,3 +1,12 @@
+<?php
+// phpcs:disable Generic.Files.LineLength.MaxExceeded                              
+// phpcs:disable Generic.Files.LineLength.TooLong                                  
+
+/**
+ * @var mixed[] $view
+ */
+?>
+
 <h2>S3 Deployment Options</h2>
 
 <h3>S3</h3>
