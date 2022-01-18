@@ -107,19 +107,23 @@ class Deployer {
                     continue;
                 }
 
-                $result = $s3->putObject( $put_data );
+                try {
+                    $result = $s3->putObject( $put_data );
 
-                if ( $result['@metadata']['statusCode'] === 200 ) {
-                    \WP2Static\DeployCache::addFile( $cache_key, $namespace, $hash );
+                    if ( $result['@metadata']['statusCode'] === 200 ) {
+                        \WP2Static\DeployCache::addFile( $cache_key, $namespace, $hash );
 
-                    if ( $cf_max_paths >= count( $cf_stale_paths ) ) {
-                        $cf_key = $cache_key;
-                        if ( 0 === substr_compare( $cf_key, '/index.html', -11 ) ) {
-                            $cf_key = substr( $cf_key, 0, -10 );
+                        if ( $cf_max_paths >= count( $cf_stale_paths ) ) {
+                            $cf_key = $cache_key;
+                            if ( 0 === substr_compare( $cf_key, '/index.html', -11 ) ) {
+                                $cf_key = substr( $cf_key, 0, -10 );
+                            }
+                            $cf_key = str_replace( ' ', '%20', $cf_key );
+                            array_push( $cf_stale_paths, $cf_key );
                         }
-                        $cf_key = str_replace( ' ', '%20', $cf_key );
-                        array_push( $cf_stale_paths, $cf_key );
                     }
+                } catch ( AwsException $e ) {
+                    WsLog::l( 'Error uploading file ' . $filename . ': ' . $e->getMessage() );
                 }
             }
         }
@@ -156,19 +160,25 @@ class Deployer {
                 continue;
             }
 
-            $result = $s3->putObject( $put_data );
+            try {
+                $result = $s3->putObject( $put_data );
 
-            if ( $result['@metadata']['statusCode'] === 200 ) {
-                \WP2Static\DeployCache::addFile( $cache_key, $namespace, $hash );
+                if ( $result['@metadata']['statusCode'] === 200 ) {
+                    \WP2Static\DeployCache::addFile( $cache_key, $namespace, $hash );
 
-                if ( $cf_max_paths >= count( $cf_stale_paths ) ) {
-                    $cf_key = $cache_key;
-                    if ( 0 === substr_compare( $cf_key, '/index.html', -11 ) ) {
-                        $cf_key = substr( $cf_key, 0, -10 );
+                    if ( $cf_max_paths >= count( $cf_stale_paths ) ) {
+                        $cf_key = $cache_key;
+                        if ( 0 === substr_compare( $cf_key, '/index.html', -11 ) ) {
+                            $cf_key = substr( $cf_key, 0, -10 );
+                        }
+                        $cf_key = str_replace( ' ', '%20', $cf_key );
+                        array_push( $cf_stale_paths, $cf_key );
                     }
-                    $cf_key = str_replace( ' ', '%20', $cf_key );
-                    array_push( $cf_stale_paths, $cf_key );
                 }
+            } catch ( AwsException $e ) {
+                WsLog::l(
+                    'Error uploading redirect ' . $redirect['url'] . ': ' . $e->getMessage()
+                );
             }
         }
 
